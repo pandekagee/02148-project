@@ -1,4 +1,4 @@
-package dk.dtu;
+package dk.spilstuff;
 
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;

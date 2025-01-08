@@ -1,4 +1,4 @@
-package dk.dtu;
+package dk.spilstuff;
 
 import static org.junit.Assert.assertTrue;
 
