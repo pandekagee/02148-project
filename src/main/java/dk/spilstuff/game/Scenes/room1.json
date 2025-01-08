@@ -1,0 +1,23 @@
+{
+    "bgtype": 0,
+    "bg": "taihou",
+    "objects": [
+        {
+            "depth": 0,
+            "yoffset": 0,
+            "rotation": 0,
+            "name": "Player",
+            "x": 672,
+            "sprite": "",
+            "xoffset": 0,
+            "y": 224,
+            "xscale": 1,
+            "yscale": 1
+        }
+    ],
+    "width": 1280,
+    "fps": 60,
+    "height": 720,
+    "camwidth": 640,
+    "camheight": 360
+}

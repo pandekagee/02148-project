@@ -18,7 +18,31 @@
     <maven.compiler.target>23</maven.compiler.target>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+        <!-- LWJGL BOM -->
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-bom</artifactId>
+            <version>3.3.2</version> <!-- Replace with the latest version -->
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
   <dependencies>
+    <dependency>
+        <groupId>org.reflections</groupId>
+        <artifactId>reflections</artifactId>
+        <version>0.10.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20250107</version>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -27,48 +51,72 @@
     </dependency>
 
     <dependency>
-        <groupId>org.lwjgl</groupId>
-        <artifactId>lwjgl</artifactId>
-        <version>3.3.2</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.lwjgl</groupId>
-        <artifactId>lwjgl-opengl</artifactId>
-        <version>3.3.2</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.lwjgl</groupId>
-        <artifactId>lwjgl-glfw</artifactId>
-        <version>3.3.2</version>
-    </dependency>
-
-    <dependency>
-        <groupId>org.lwjgl</groupId>
-        <artifactId>lwjgl</artifactId>
-        <version>3.3.2</version>
-        <classifier>natives-windows</classifier>
-    </dependency>
-
-    <dependency>
-        <groupId>org.lwjgl</groupId>
-        <artifactId>lwjgl-opengl</artifactId>
-        <version>3.3.2</version>
-        <classifier>natives-windows</classifier>
-    </dependency>
-
-    <dependency>
-        <groupId>org.lwjgl</groupId>
-        <artifactId>lwjgl-glfw</artifactId>
-        <version>3.3.2</version>
-        <classifier>natives-windows</classifier>
-    </dependency>
-
-    <dependency>
       <groupId>io.github.pspaces.jspace</groupId>
       <artifactId>common</artifactId>
       <version>[0.0,)</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-glfw</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-opengl</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-stb</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-assimp</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-vulkan</artifactId>
+        <scope>compile</scope>
+    </dependency>
+
+    <!-- LWJGL natives -->
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl</artifactId>
+        <classifier>natives-windows</classifier>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-glfw</artifactId>
+        <classifier>natives-windows</classifier>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-opengl</artifactId>
+        <classifier>natives-windows</classifier>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-stb</artifactId>
+        <classifier>natives-windows</classifier>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-assimp</artifactId>
+        <classifier>natives-windows</classifier>
+        <scope>runtime</scope>
     </dependency>
   </dependencies>
 

@@ -1,1 +1,3 @@
 .vscode
+target
+src/main/java/dk/spilstuff/game/runtime
