@@ -168,6 +168,10 @@ public class Scene {
 
             GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, id);
             glViewport(0,0,width,height);
+
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
             glBindTexture(ARBTextureRectangle.GL_TEXTURE_RECTANGLE_ARB, Game.getSpriteSheetTexture(0));
 
             double height = Game.getActiveScene().getHeight();

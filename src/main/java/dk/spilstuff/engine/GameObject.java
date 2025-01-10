@@ -76,6 +76,10 @@ public class GameObject {
         drawSelf();
     }
 
+    public boolean collisionMeeting(double x, double y, GameObject instance){
+        return (Game.instanceCollidingOffset(x, y, this, instance));
+    }
+
     protected void drawSelf() {
         if(sprite != null) {
             Game.drawSpriteScaled(sprite, subimg, depth, x, y, xScale, yScale, rotation, color, alpha);

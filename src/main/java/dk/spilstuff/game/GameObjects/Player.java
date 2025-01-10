@@ -1,43 +1,87 @@
 package dk.spilstuff.game.GameObjects;
 
-import dk.spilstuff.engine.*;
-
 import java.awt.Color;
+
+import org.jspace.ActualField;
+import org.jspace.FormalField;
+
+import dk.spilstuff.engine.Camera;
+import dk.spilstuff.engine.Game;
+import dk.spilstuff.engine.GameObject;
+import dk.spilstuff.engine.Keys;
+import dk.spilstuff.engine.Sprite;
 
 public class Player extends GameObject {
     
+    int playerId = 1;
+    int opponentY = 0;
+    boolean gameStart = false;
+
+    Camera camera;
+
+    void getOpponentY(){
+        Integer _y = Game.receiveInteger((playerId+1) % 2, "y");
+
+        if (_y != null){
+            opponentY = _y;
+        }
+    }
 
     @Override
     public void createEvent() {
         super.createEvent();
+
+        Game.sendInteger(0, "join", 0);
+
+        xScale = 8;
+        yScale = 32;
     }
 
     @Override
     public void updateEvent() {
-        int xChange = (Game.keyIsHeld(Keys.VK_D) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_A) ? 1 : 0);
-        int yChange = (Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0);
 
-        x += xChange;
+        if (!gameStart){
+            Integer _playerId = Game.receiveInteger(0, "joinMessage");
+
+            if (_playerId != null){
+                playerId = _playerId;
+                gameStart = true;
+                Game.instantiate(400, 250, xScale, yScale, 0, 0, new Sprite("whiteSquareBUILTIN", 0, 0), "Ball");
+            }
+        }
+
+        int yChange = ((Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0)) * 2;
+
+        if (Game.keyIsPressed(Keys.VK_L)){
+            Game.instantiate(400, 250, xScale, yScale, 0, 0, new Sprite("whiteSquareBUILTIN", 0, 0), "Ball");
+        }
+        
         y += yChange;
 
-        Camera camera = Game.getCamera();
+        if (yChange != 0){
+            Game.sendInteger(playerId, "y", (int) y);
+        }
 
-        camera.setX(x - camera.getWidth()/2);
-        camera.setY(y - camera.getHeight()/2);
+        getOpponentY();
+
+        camera = Game.getCamera();
         
         super.updateEvent();
     }
 
     @Override
     public void drawEvent() {
-        Game.drawSquare(depth,x,y,8,8,rotation,Color.RED,alpha);
+        Game.drawSquare(depth,x,y,8,32,rotation,Color.RED,alpha);
         
-        Camera camera = Game.getCamera();
+        //draw other player
+        Game.drawSquare(depth, camera.getWidth() - 50, opponentY, xScale, yScale, rotation, Color.BLUE, alpha);
+
         String fpsString = "FPS: " + Game.getFPS() + "\nRFPS:" + Game.getRealFPS();
 
-        Game.drawText(      Game.getTextFont("Mono"),fpsString,-100, camera.getX() + 10, camera.getY() + 20);
-        Game.drawTextScaled(Game.getTextFont("Mono"),fpsString,-99 , camera.getX() + 11, camera.getY() + 21,1,1,0,Color.BLACK,1);
+        if (!gameStart){
+            Game.drawText( Game.getTextFont("Mono"),"Waiting for opponent", -100, camera.getWidth() / 2 - 85, camera.getHeight() / 2 - 25 );    
+        }
 
-        Game.drawTextScaled(Game.getTextFont("Roboto.ttf"),"Hello OSKARMUS!!!!",depth - 1, x + 30, y + 30, 2, 2, 0, Color.BLACK, alpha);
+        Game.drawText( Game.getTextFont("Mono"),fpsString,-100, camera.getX() + 10, camera.getY() + 20 );
     }
 }

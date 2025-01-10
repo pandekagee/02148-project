@@ -13,6 +13,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+import org.jspace.ActualField;
+import org.jspace.FormalField;
+import org.jspace.RemoteSpace;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
@@ -27,7 +30,10 @@ import static org.lwjgl.system.MemoryUtil.*;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Set;
-
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.awt.Font;
 
 public class Game {
@@ -59,6 +65,10 @@ public class Game {
     private static int[] spriteSheets;
     private static HashMap<String, TextFont> textFontMap;
 
+    // multiplayer handling variables
+    public static RemoteSpace lobby;
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
+
     public static void main(String[] args) {
         instantiatedObjects = new ArrayList<GameObject>();
         instantiateQueue = new ArrayList<GameObject>();
@@ -68,7 +78,16 @@ public class Game {
         mouseButtonDifferences = new boolean[4];
         gameObjects = new HashMap<String, Class<? extends GameObject>>();
         scenes = new HashMap<String, Scene>();
-        
+
+        // multiplayer
+        // Connect to the lobby
+        try {
+            lobby = new RemoteSpace("tcp://localhost:9001/lobby?keep");
+        } catch (Exception e) {
+            System.err.println("An error occurred while connecting to the lobby: " + e.getMessage());
+            e.printStackTrace();
+        }
+
         // compilation
         rootDirectory = System.getProperty("user.dir");
 
@@ -471,13 +490,7 @@ public class Game {
         
         instantiatedObjects.stream().filter(object::isInstance).forEach(gameObject -> a.add(gameObject));
             
-        GameObject[] a2 = new GameObject[a.size()];
-
-        for(int i = 0; i < a.size(); i++) {
-            a2[i] = a.get(i);
-        }
-
-        return a2;
+        return a.toArray(new GameObject[0]);
     }
 
     /**
@@ -533,6 +546,26 @@ public class Game {
     public static boolean instanceColliding(GameObject instance1, GameObject instance2) {
         double x1a = instance1.x - instance1.sprite.getXOffset() * instance1.xScale;
         double y1a = instance1.y - instance1.sprite.getYOffset() * instance1.yScale;
+        double x2a = x1a + instance1.sprite.getWidth() * instance1.xScale;
+        double y2a = y1a + instance1.sprite.getHeight() * instance1.yScale;
+        double t = Math.min(x1a,x2a);
+        x2a = Math.max(x1a, x2a);
+        x1a = t;
+
+        double x1b = instance2.x - instance2.sprite.getXOffset() * instance2.xScale;
+        double y1b = instance2.y - instance2.sprite.getYOffset() * instance2.yScale;
+        double x2b = x1b + instance2.sprite.getWidth() * instance2.xScale;
+        double y2b = y1b + instance2.sprite.getHeight() * instance2.yScale;
+        t = Math.min(x1b,x2b);
+        x2b = Math.max(x1b, x2b);
+        x1b = t;
+        
+        return (x1a < x2b) && (x2a > x1b) && (y1a < y2b) && (y2a > y1b);
+    }
+
+    public static boolean instanceCollidingOffset(double posX, double posY, GameObject instance1, GameObject instance2) {
+        double x1a = posX - instance1.sprite.getXOffset() * instance1.xScale;
+        double y1a = posY - instance1.sprite.getYOffset() * instance1.yScale;
         double x2a = x1a + instance1.sprite.getWidth() * instance1.xScale;
         double y2a = y1a + instance1.sprite.getHeight() * instance1.yScale;
         double t = Math.min(x1a,x2a);
@@ -823,5 +856,70 @@ public class Game {
         }
     }
 
+    public static void sendString(int playerId, String variable, String message) throws InterruptedException{
+        executor.submit(() -> {
+            try {
+                lobby.put(playerId, variable, message);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Failed to send data: " + e.getMessage());
+            }
+        });
+    }
 
+    public static void sendInteger(int playerId, String variable, int value) {
+        executor.submit(() -> {
+            try {
+                lobby.put(playerId, variable, value);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Failed to send data: " + e.getMessage());
+                throw new RuntimeException(e); // Wrap it in an unchecked exception
+            }
+        });
+    }
+
+    public static String receiveString(int playerId, String variable) throws InterruptedException {
+        Future<Object[]> future = executor.submit(() -> {
+            try {
+                return lobby.getp( new ActualField(playerId), new ActualField(variable), new FormalField(String.class)
+                );
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Failed to receive data: " + e.getMessage());
+                return null;
+            }
+        });
+
+        try {
+            Object[] message = future.get();
+            if (message != null) {
+                return (String) message[2];
+            }
+        } catch (ExecutionException e) {
+            System.err.println("Task execution failed: " + e.getCause().getMessage());
+        }
+
+        return null;
+    }
+
+    public static Integer receiveInteger(int playerId, String variable) {
+        try {
+            Future<Object[]> future = executor.submit(() -> 
+                lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(Integer.class))
+            );
+    
+            Object[] message = future.get();
+            if (message != null) {
+                return (Integer) message[2];
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Failed to receive data: " + e.getMessage());
+        } catch (ExecutionException e) {
+            System.err.println("Task execution failed: " + e.getCause().getMessage());
+        }
+    
+        return null;
+    }
 }
