@@ -856,62 +856,39 @@ public class Game {
         }
     }
 
-    public static void sendString(int playerId, String variable, String message) throws InterruptedException{
-        executor.submit(() -> {
-            try {
-                lobby.put(playerId, variable, message);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.err.println("Failed to send data: " + e.getMessage());
-            }
-        });
-    }
-
-    public static void sendInteger(int playerId, String variable, int value) {
+    public static <T> void sendValue(int playerId, String variable, T value) {
         executor.submit(() -> {
             try {
                 lobby.put(playerId, variable, value);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("Failed to send data: " + e.getMessage());
-                throw new RuntimeException(e); // Wrap it in an unchecked exception
+                throw new RuntimeException(e);
             }
         });
-    }
-
-    public static String receiveString(int playerId, String variable) throws InterruptedException {
-        Future<Object[]> future = executor.submit(() -> {
-            try {
-                return lobby.getp( new ActualField(playerId), new ActualField(variable), new FormalField(String.class)
-                );
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.err.println("Failed to receive data: " + e.getMessage());
-                return null;
-            }
-        });
-
-        try {
-            Object[] message = future.get();
-            if (message != null) {
-                return (String) message[2];
-            }
-        } catch (ExecutionException e) {
-            System.err.println("Task execution failed: " + e.getCause().getMessage());
-        }
-
-        return null;
     }
 
     public static Integer receiveInteger(int playerId, String variable) {
+        return receiveValue(playerId, variable, Integer.class);
+    }
+
+    public static String receiveString(int playerId, String variable) {
+        return receiveValue(playerId, variable, String.class);
+    }
+
+    public static Double receiveDouble(int playerId, String variable) {
+        return receiveValue(playerId, variable, Double.class);
+    }
+
+    public static <T> T receiveValue(int playerId, String variable, Class<T> type) {
         try {
             Future<Object[]> future = executor.submit(() -> 
-                lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(Integer.class))
+                lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(type))
             );
     
             Object[] message = future.get();
             if (message != null) {
-                return (Integer) message[2];
+                return type.cast(message[2]);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -921,5 +898,5 @@ public class Game {
         }
     
         return null;
-    }
+    }    
 }

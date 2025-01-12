@@ -3,7 +3,7 @@ package dk.spilstuff.engine;
 public class Mathf {
     public static double pointDirection(double x1, double y1, double x2, double y2) {
         double deltaX = x2 - x1;
-        double deltaY = y2 - y1;
+        double deltaY = -(y2 - y1);
 
         // Calculate angle in radians
         double radians = Math.atan2(deltaY, deltaX);
@@ -90,6 +90,6 @@ public class Mathf {
     }
 
     public static double lengthDirectionY(double length, double direction) {
-        return length * dsin(direction);
+        return length * -dsin(direction);
     }
 }

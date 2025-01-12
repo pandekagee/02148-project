@@ -9,19 +9,21 @@ import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
 import dk.spilstuff.engine.Keys;
+import dk.spilstuff.engine.Mathf;
 import dk.spilstuff.engine.Sprite;
 
 public class Player extends GameObject {
     
     int playerId = 1;
     int opponentID = 0;
-    int opponentY = 0;
+    double opponentY = 0;
     boolean gameStart = false;
+    int ballCounter = 0;
 
     Camera camera;
 
     private void getOpponentY(){
-        Integer _y = Game.receiveInteger(opponentID, "y");
+        Double _y = Game.receiveDouble(opponentID, "y");
 
         if (_y != null){
             opponentY = _y;
@@ -29,34 +31,40 @@ public class Player extends GameObject {
     }
 
     private void checkForNewBalls() {
-        while(Game.receiveInteger(opponentID, "ballCreated") != null) {
-            createBall(false);
+        Integer ballStartAngle = Game.receiveInteger(opponentID, "ballCreated");
+
+        while(ballStartAngle != null) {
+            Ball ball = createBall(false);
+            ball.motionSet(180 - ballStartAngle, 3);
+
+            ballStartAngle = Game.receiveInteger(opponentID, "ballCreated");
         }
     }
 
-    private void createBall(boolean sendUpdate) {
+    private Ball createBall(boolean sendUpdate) {
         Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
-        ball.ballID = Game.getInstanceCount(Ball.class) - 1;
+        ball.ballID = ballCounter;
         ball.player = this;
+        ballCounter++;
 
         if(sendUpdate) {
-            Game.sendInteger(playerId, "ballCreated", 0);
-            ball.motionSet(45+180, 3); //point it towards own paddle
-        }
-        else {
-            ball.motionSet(45+270, 3); //point it towards opponent's paddle
+            int startAngle = Mathf.intRandomRange(100, 260);
+            Game.sendValue(playerId, "ballCreated", startAngle);
+            ball.motionSet(startAngle, 3); //point it towards own paddle
         }
         
+        return ball;
     }
 
     @Override
     public void createEvent() {
         super.createEvent();
 
-        Game.sendInteger(0, "join", 0);
+        Game.sendValue(0, "join", 0);
 
         xScale = 8;
         yScale = 32;
+        color = Color.RED;
     }
 
     @Override
@@ -69,7 +77,9 @@ public class Player extends GameObject {
                 playerId = _playerId;
                 opponentID = (playerId + 1) % 2;
                 gameStart = true;
-                createBall(true); //each player gets a ball
+
+                if(playerId == 0) //create the first ball
+                    createBall(true);
             }
         }
 
@@ -82,7 +92,7 @@ public class Player extends GameObject {
         y += yChange;
 
         if (yChange != 0){
-            Game.sendInteger(playerId, "y", (int) y);
+            Game.sendValue(playerId, "y", y);
         }
 
         getOpponentY();
@@ -96,10 +106,10 @@ public class Player extends GameObject {
 
     @Override
     public void drawEvent() {
-        Game.drawSquare(depth,x,y,8,32,rotation,Color.RED,alpha);
+        drawSelf();
         
         //draw other player
-        Game.drawSquare(depth, camera.getWidth() - 50, opponentY, xScale, yScale, rotation, Color.BLUE, alpha);
+        Game.drawSpriteScaled(sprite, 0, depth, camera.getWidth() - 50, opponentY, xScale, yScale, rotation, Color.BLUE, alpha);
 
         String fpsString = "FPS: " + Game.getFPS() + "\nRFPS:" + Game.getRealFPS();
 

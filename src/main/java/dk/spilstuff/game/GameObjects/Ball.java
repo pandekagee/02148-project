@@ -14,31 +14,32 @@ import dk.spilstuff.engine.Mathf;
 import dk.spilstuff.engine.Sprite;
 
 public class Ball extends GameObject {
+    private  Camera camera;
 
-    double hsp = 0;
-    double vsp = 0;
-
-    int ballScale = 4;
-
-    Camera camera;
-
-    Player player;
+    public Player player;
 
     public long ballID;
+
+    private boolean isColliding = false;
 
     private void playerCollision(){
         int id = (player.playerId + 1) % 2;
 
         if (collisionMeeting(x+hsp, y, player)){
-            hsp = -hsp;
+            if(!isColliding) {
+                double dir = Mathf.pointDirection(player.x, player.y, x-hsp, y-vsp);
+                dir = dir < 280 && dir > 180 ? 280 : (dir > 80 && dir <= 180 ? 80 : dir); //clamp dir between 280-360 and 0-80 like this angle (<)
+                Logger.addLog("Direction: " + dir);
+                
+                motionSet(dir, 3);
 
-            sendPosition(id);
+                sendPosition(id);
+            }
+
+            isColliding = true;
         }
-
-        if (collisionMeeting(x, y+vsp, player)){
-            vsp = -vsp;
-
-            sendPosition(id);
+        else {
+            isColliding = false;
         }
     }
 
@@ -48,25 +49,25 @@ public class Ball extends GameObject {
     }
 
     private void sendPosition(int playerID) {
-        Game.sendInteger(playerID + (int)ballID*2, "ballX", (int) (camera.getWidth() - x));
-        Game.sendInteger(playerID + (int)ballID*2, "ballY", (int) y);
-        Game.sendInteger(playerID + (int)ballID*2, "ballHsp", (int) -hsp);
-        Game.sendInteger(playerID + (int)ballID*2, "ballVsp", (int) vsp);
+        Game.sendValue(playerID + (int)ballID*2, "ballX", camera.getWidth() - x);
+        Game.sendValue(playerID + (int)ballID*2, "ballY", y);
+        Game.sendValue(playerID + (int)ballID*2, "ballHsp", -hsp);
+        Game.sendValue(playerID + (int)ballID*2, "ballVsp", vsp);
     }
 
     void getPosition(){
-        Integer _x = Game.receiveInteger(player.playerId + (int)ballID*2, "ballX");
+        Double _x = Game.receiveDouble(player.playerId + (int)ballID*2, "ballX");
         if (_x != null){
             Logger.addLog("ACTIVE");
             x = _x;
             
-            Integer _y = Game.receiveInteger(player.playerId + (int)ballID*2, "ballY");
+            Double _y = Game.receiveDouble(player.playerId + (int)ballID*2, "ballY");
             if (_y != null){ y = _y; }
 
-            Integer _hsp = Game.receiveInteger(player.playerId + (int)ballID*2, "ballHsp");
+            Double _hsp = Game.receiveDouble(player.playerId + (int)ballID*2, "ballHsp");
             if (_hsp != null){ hsp = _hsp; }
 
-            Integer _vsp = Game.receiveInteger(player.playerId + (int)ballID*2, "ballVsp");
+            Double _vsp = Game.receiveDouble(player.playerId + (int)ballID*2, "ballVsp");
             if (_vsp != null){ vsp = _vsp; }
         }
     }
@@ -75,10 +76,7 @@ public class Ball extends GameObject {
     public void createEvent() {
         super.createEvent();
 
-        sprite = new Sprite("whiteSquareBUILTIN", true);
-        
-        xScale = ballScale;
-        yScale = ballScale;
+        sprite = new Sprite("spr_ball", true);
 
         camera = Game.getCamera();
         x = camera.getWidth() / 2;
@@ -95,22 +93,20 @@ public class Ball extends GameObject {
         playerCollision();
         getPosition();
 
-        x += hsp;
-        y += vsp;
-
-        if (y < 0 || y > camera.getHeight() - ballScale){
+        if (y < 0 || y > camera.getHeight() - sprite.getWidth() / 2){
             vsp = -vsp;
         }
 
-        if (Game.keyIsPressed(Keys.VK_R)){
-            x = camera.getWidth() / 2;
-            y = camera.getHeight() / 2;
-            motionSet(45+180, 3);
+        //screen-wrapping (if you miss a ball, your opponent gets it)
+        if(x < 0 || x > camera.getWidth()) {
+            Game.destroy(this);
         }
     }
 
     @Override
     public void drawEvent() {
-        Game.drawSquare(depth, x, y, ballScale, ballScale, rotation, Color.WHITE, alpha);
+        drawSelf();
+
+        Game.drawText(Game.getTextFont("Mono"),""+ballID,0,x + 6, y + 6);
     }
 }
