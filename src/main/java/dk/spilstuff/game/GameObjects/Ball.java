@@ -9,6 +9,9 @@ import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
 import dk.spilstuff.engine.Keys;
+import dk.spilstuff.engine.Logger;
+import dk.spilstuff.engine.Mathf;
+import dk.spilstuff.engine.Sprite;
 
 public class Ball extends GameObject {
 
@@ -21,61 +24,65 @@ public class Ball extends GameObject {
 
     Player player;
 
-    void playerCollision(){
+    public long ballID;
+
+    private void playerCollision(){
         int id = (player.playerId + 1) % 2;
 
         if (collisionMeeting(x+hsp, y, player)){
             hsp = -hsp;
 
-            Game.sendInteger(id, "ballX", (int) (camera.getWidth() - x));
-            Game.sendInteger(id, "ballY", (int) y);
-            Game.sendInteger(id, "ballHsp", (int) -hsp);
-            Game.sendInteger(id, "ballVsp", (int) vsp);
+            sendPosition(id);
         }
 
         if (collisionMeeting(x, y+vsp, player)){
             vsp = -vsp;
-            Game.sendInteger(id, "ballX", (int) (camera.getWidth() - x));
-            Game.sendInteger(id, "ballY", (int) y);
-            Game.sendInteger(id, "ballHsp", (int) -hsp);
-            Game.sendInteger(id, "ballVsp", (int) vsp);
+
+            sendPosition(id);
         }
     }
 
-    void motionSet(double angle, double speed){
-        double rad = Math.toRadians(angle); 
-        hsp = Math.cos(rad) * speed;
-        vsp = Math.sin(rad) * speed;
+    public void motionSet(double angle, double speed){
+        hsp = Mathf.lengthDirectionX(speed, angle);
+        vsp = Mathf.lengthDirectionY(speed, angle);
+    }
+
+    private void sendPosition(int playerID) {
+        Game.sendInteger(playerID + (int)ballID*2, "ballX", (int) (camera.getWidth() - x));
+        Game.sendInteger(playerID + (int)ballID*2, "ballY", (int) y);
+        Game.sendInteger(playerID + (int)ballID*2, "ballHsp", (int) -hsp);
+        Game.sendInteger(playerID + (int)ballID*2, "ballVsp", (int) vsp);
     }
 
     void getPosition(){
-        Integer _x = Game.receiveInteger(player.playerId, "ballX");
-        if (_x != null){ x = _x; System.out.print("ACTIVE"); }
+        Integer _x = Game.receiveInteger(player.playerId + (int)ballID*2, "ballX");
+        if (_x != null){
+            Logger.addLog("ACTIVE");
+            x = _x;
+            
+            Integer _y = Game.receiveInteger(player.playerId + (int)ballID*2, "ballY");
+            if (_y != null){ y = _y; }
 
-        Integer _y = Game.receiveInteger(player.playerId, "ballY");
-        if (_y != null){ y = _y; }
+            Integer _hsp = Game.receiveInteger(player.playerId + (int)ballID*2, "ballHsp");
+            if (_hsp != null){ hsp = _hsp; }
 
-        Integer _hsp = Game.receiveInteger(player.playerId, "ballHsp");
-        if (_hsp != null){ hsp = _hsp; }
-
-        Integer _vsp = Game.receiveInteger(player.playerId, "ballVsp");
-        if (_vsp != null){ vsp = _vsp; }
+            Integer _vsp = Game.receiveInteger(player.playerId + (int)ballID*2, "ballVsp");
+            if (_vsp != null){ vsp = _vsp; }
+        }
     }
 
     @Override
     public void createEvent() {
         super.createEvent();
 
+        sprite = new Sprite("whiteSquareBUILTIN", true);
+        
         xScale = ballScale;
         yScale = ballScale;
-        
-        player = (Player) Game.getInstancesOfType(Player.class)[0];
 
         camera = Game.getCamera();
         x = camera.getWidth() / 2;
         y = camera.getHeight() / 2;
-
-        motionSet(45+180, 3);
     }
 
     @Override

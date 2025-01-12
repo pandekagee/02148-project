@@ -14,17 +14,39 @@ import dk.spilstuff.engine.Sprite;
 public class Player extends GameObject {
     
     int playerId = 1;
+    int opponentID = 0;
     int opponentY = 0;
     boolean gameStart = false;
 
     Camera camera;
 
-    void getOpponentY(){
-        Integer _y = Game.receiveInteger((playerId+1) % 2, "y");
+    private void getOpponentY(){
+        Integer _y = Game.receiveInteger(opponentID, "y");
 
         if (_y != null){
             opponentY = _y;
         }
+    }
+
+    private void checkForNewBalls() {
+        while(Game.receiveInteger(opponentID, "ballCreated") != null) {
+            createBall(false);
+        }
+    }
+
+    private void createBall(boolean sendUpdate) {
+        Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
+        ball.ballID = Game.getInstanceCount(Ball.class) - 1;
+        ball.player = this;
+
+        if(sendUpdate) {
+            Game.sendInteger(playerId, "ballCreated", 0);
+            ball.motionSet(45+180, 3); //point it towards own paddle
+        }
+        else {
+            ball.motionSet(45+270, 3); //point it towards opponent's paddle
+        }
+        
     }
 
     @Override
@@ -45,15 +67,16 @@ public class Player extends GameObject {
 
             if (_playerId != null){
                 playerId = _playerId;
+                opponentID = (playerId + 1) % 2;
                 gameStart = true;
-                Game.instantiate(400, 250, xScale, yScale, 0, 0, new Sprite("whiteSquareBUILTIN", 0, 0), "Ball");
+                createBall(true); //each player gets a ball
             }
         }
 
         int yChange = ((Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0)) * 2;
 
         if (Game.keyIsPressed(Keys.VK_L)){
-            Game.instantiate(400, 250, xScale, yScale, 0, 0, new Sprite("whiteSquareBUILTIN", 0, 0), "Ball");
+            createBall(true);
         }
         
         y += yChange;
@@ -63,6 +86,8 @@ public class Player extends GameObject {
         }
 
         getOpponentY();
+
+        checkForNewBalls();
 
         camera = Game.getCamera();
         
