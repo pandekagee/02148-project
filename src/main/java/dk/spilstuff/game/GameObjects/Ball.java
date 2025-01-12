@@ -53,13 +53,17 @@ public class Ball extends GameObject {
         Game.sendValue(playerID + (int)ballID * 2, "ballInfo", new BallInfo(x, y, hsp, vsp));
     }
 
+    public void setToBallInfo(BallInfo ballInfo) {
+        x = ballInfo.x;
+        y = ballInfo.y;
+        hsp = ballInfo.hsp;
+        vsp = ballInfo.vsp;
+    }
+
     void getPosition(){
         BallInfo ballInfo = Game.receiveValue(player.playerId + (int)ballID * 2, "ballInfo", BallInfo.class);
         if (ballInfo != null){
-            x = ballInfo.x;
-            y = ballInfo.y;
-            hsp = ballInfo.hsp;
-            vsp = ballInfo.vsp;
+            setToBallInfo(ballInfo);
         }
     }
 
@@ -70,8 +74,6 @@ public class Ball extends GameObject {
         sprite = new Sprite("spr_ball", true);
 
         camera = Game.getCamera();
-        x = camera.getWidth() / 2;
-        y = camera.getHeight() / 2;
     }
 
     @Override

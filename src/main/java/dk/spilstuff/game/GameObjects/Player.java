@@ -2,6 +2,7 @@ package dk.spilstuff.game.GameObjects;
 
 import java.awt.Color;
 
+import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
@@ -29,24 +30,32 @@ public class Player extends GameObject {
     }
 
     private void checkForNewBalls() {
-        Integer ballStartAngle = Game.receiveInteger(opponentID, "ballCreated");
+        BallInfo ballInfo = Game.receiveValue(opponentID, "ballCreated", BallInfo.class);
 
-        while(ballStartAngle != null) {
+        while(ballInfo != null) {
             Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
             ball.ballID = ballCounter;
             ball.player = this;
             ballCounter++;
 
-            ball.motionSet(ballStartAngle, 3);
+            ball.setToBallInfo(ballInfo);
 
-            ballStartAngle = Game.receiveInteger(opponentID, "ballCreated");
+            ballInfo = Game.receiveValue(opponentID, "ballCreated", BallInfo.class);
         }
     }
 
     private void createBall() {
-        int startAngle = Mathf.intRandomRange(-80, 80) + (playerId == 0 ? 180 : 0);
-        Game.sendValue(playerId, "ballCreated", startAngle);
-        Game.sendValue(opponentID, "ballCreated", startAngle);
+        int startAngle = Mathf.intRandomRange(-80, 80) + (playerId == 0 ? 0 : 180);
+
+        BallInfo ballInfo = new BallInfo(
+            x + (playerId == 0 ? 15 : -15),
+            y,
+            Mathf.lengthDirectionX(3, startAngle),
+            Mathf.lengthDirectionY(3, startAngle)
+        );
+
+        Game.sendValue(playerId, "ballCreated", ballInfo);
+        Game.sendValue(opponentID, "ballCreated", ballInfo);
     }
 
     public void assignSide(int playerID) {

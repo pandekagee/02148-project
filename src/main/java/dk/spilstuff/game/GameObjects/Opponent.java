@@ -23,6 +23,5 @@ public class Opponent extends GameObject {
 
         xScale = 8;
         yScale = 32;
-        color = Color.BLUE;
     }
 }
