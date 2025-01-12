@@ -2,31 +2,29 @@ package dk.spilstuff.game.GameObjects;
 
 import java.awt.Color;
 
-import org.jspace.ActualField;
-import org.jspace.FormalField;
-
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
 import dk.spilstuff.engine.Keys;
 import dk.spilstuff.engine.Mathf;
-import dk.spilstuff.engine.Sprite;
 
 public class Player extends GameObject {
     
     int playerId = 1;
     int opponentID = 0;
-    double opponentY = 0;
     boolean gameStart = false;
     int ballCounter = 0;
+    private int playerIndicatorTimer = 0;
 
     Camera camera;
+
+    public Opponent opponent;
 
     private void getOpponentY(){
         Double _y = Game.receiveDouble(opponentID, "y");
 
         if (_y != null){
-            opponentY = _y;
+            opponent.y = _y;
         }
     }
 
@@ -46,9 +44,16 @@ public class Player extends GameObject {
     }
 
     private void createBall() {
-        int startAngle = Mathf.intRandomRange(100, 260);
-        Game.sendValue(playerId, "ballCreated", 180 - startAngle);
+        int startAngle = Mathf.intRandomRange(-80, 80) + (playerId == 0 ? 180 : 0);
+        Game.sendValue(playerId, "ballCreated", startAngle);
         Game.sendValue(opponentID, "ballCreated", startAngle);
+    }
+
+    public void assignSide(int playerID) {
+        camera = Game.getCamera();
+        
+        x = playerID == 0 ? 50 : camera.getWidth() - 50;
+        color = playerID == 0 ? Color.RED : Color.BLUE;
     }
 
     @Override
@@ -59,11 +64,17 @@ public class Player extends GameObject {
 
         xScale = 8;
         yScale = 32;
-        color = Color.RED;
+
+        opponent = (Opponent)Game.instantiate(0, y, "Opponent");
+
+        assignSide(0);
+        opponent.assignSide(1);
+
     }
 
     @Override
     public void updateEvent() {
+        playerIndicatorTimer--;
 
         if (!gameStart){
             Integer _playerId = Game.receiveInteger(0, "joinMessage");
@@ -73,7 +84,12 @@ public class Player extends GameObject {
                 opponentID = (playerId + 1) % 2;
                 gameStart = true;
 
+                assignSide(playerId);
+                opponent.assignSide(opponentID);
+
                 createBall();
+
+                playerIndicatorTimer = 8 * 60; // 8 seconds
             }
         }
 
@@ -101,9 +117,6 @@ public class Player extends GameObject {
     @Override
     public void drawEvent() {
         drawSelf();
-        
-        //draw other player
-        Game.drawSpriteScaled(sprite, 0, depth, camera.getWidth() - 50, opponentY, xScale, yScale, rotation, Color.BLUE, alpha);
 
         String fpsString = "FPS: " + Game.getFPS() + "\nRFPS:" + Game.getRealFPS();
 
@@ -112,5 +125,8 @@ public class Player extends GameObject {
         }
 
         Game.drawText( Game.getTextFont("Mono"),fpsString,-100, camera.getX() + 10, camera.getY() + 20 );
+
+        if(playerIndicatorTimer > 0)
+            Game.drawTextScaled(Game.getTextFont("Mono"), playerId == 0 ? "<- You" : "You ->", depth, x + (playerId == 0 ? 40 : -80), y,1,1,0,Color.WHITE, Math.clamp(playerIndicatorTimer/120d, 0, 1));
     }
 }

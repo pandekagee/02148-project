@@ -1,14 +1,9 @@
 package dk.spilstuff.game.GameObjects;
 
-import java.awt.Color;
-
-import org.jspace.ActualField;
-import org.jspace.FormalField;
-
+import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
-import dk.spilstuff.engine.Keys;
 import dk.spilstuff.engine.Logger;
 import dk.spilstuff.engine.Mathf;
 import dk.spilstuff.engine.Sprite;
@@ -22,18 +17,24 @@ public class Ball extends GameObject {
 
     private boolean isColliding = false;
 
-    private void playerCollision(){
-        int id = (player.playerId + 1) % 2;
+    private void playerCollision() {
 
         if (collisionMeeting(x+hsp, y, player)){
             if(!isColliding) {
                 double dir = Mathf.pointDirection(player.x, player.y, x-hsp, y-vsp);
-                dir = dir < 280 && dir > 180 ? 280 : (dir > 80 && dir <= 180 ? 80 : dir); //clamp dir between 280-360 and 0-80 like this angle (<)
-                Logger.addLog("Direction: " + dir);
+
+                if(Mathf.dcos(dir) * -Mathf.sign(hsp) < 0.17) { // if very close to a shallow angle, then fix it
+                    if(dir > 180) {
+                        dir = 270 - Mathf.sign(hsp) * 10;
+                    }
+                    else {
+                        dir = 90 + Mathf.sign(hsp) * 10;
+                    }
+                }
                 
                 motionSet(dir, 3);
 
-                sendPosition(id);
+                sendPosition(player.opponentID);
             }
 
             isColliding = true;
@@ -49,26 +50,16 @@ public class Ball extends GameObject {
     }
 
     private void sendPosition(int playerID) {
-        Game.sendValue(playerID + (int)ballID*2, "ballX", camera.getWidth() - x);
-        Game.sendValue(playerID + (int)ballID*2, "ballY", y);
-        Game.sendValue(playerID + (int)ballID*2, "ballHsp", -hsp);
-        Game.sendValue(playerID + (int)ballID*2, "ballVsp", vsp);
+        Game.sendValue(playerID + (int)ballID * 2, "ballInfo", new BallInfo(x, y, hsp, vsp));
     }
 
     void getPosition(){
-        Double _x = Game.receiveDouble(player.playerId + (int)ballID*2, "ballX");
-        if (_x != null){
-            Logger.addLog("ACTIVE");
-            x = _x;
-            
-            Double _y = Game.receiveDouble(player.playerId + (int)ballID*2, "ballY");
-            if (_y != null){ y = _y; }
-
-            Double _hsp = Game.receiveDouble(player.playerId + (int)ballID*2, "ballHsp");
-            if (_hsp != null){ hsp = _hsp; }
-
-            Double _vsp = Game.receiveDouble(player.playerId + (int)ballID*2, "ballVsp");
-            if (_vsp != null){ vsp = _vsp; }
+        BallInfo ballInfo = Game.receiveValue(player.playerId + (int)ballID * 2, "ballInfo", BallInfo.class);
+        if (ballInfo != null){
+            x = ballInfo.x;
+            y = ballInfo.y;
+            hsp = ballInfo.hsp;
+            vsp = ballInfo.vsp;
         }
     }
 
