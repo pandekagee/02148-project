@@ -34,26 +34,21 @@ public class Player extends GameObject {
         Integer ballStartAngle = Game.receiveInteger(opponentID, "ballCreated");
 
         while(ballStartAngle != null) {
-            Ball ball = createBall(false);
-            ball.motionSet(180 - ballStartAngle, 3);
+            Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
+            ball.ballID = ballCounter;
+            ball.player = this;
+            ballCounter++;
+
+            ball.motionSet(ballStartAngle, 3);
 
             ballStartAngle = Game.receiveInteger(opponentID, "ballCreated");
         }
     }
 
-    private Ball createBall(boolean sendUpdate) {
-        Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
-        ball.ballID = ballCounter;
-        ball.player = this;
-        ballCounter++;
-
-        if(sendUpdate) {
-            int startAngle = Mathf.intRandomRange(100, 260);
-            Game.sendValue(playerId, "ballCreated", startAngle);
-            ball.motionSet(startAngle, 3); //point it towards own paddle
-        }
-        
-        return ball;
+    private void createBall() {
+        int startAngle = Mathf.intRandomRange(100, 260);
+        Game.sendValue(playerId, "ballCreated", 180 - startAngle);
+        Game.sendValue(opponentID, "ballCreated", startAngle);
     }
 
     @Override
@@ -78,15 +73,14 @@ public class Player extends GameObject {
                 opponentID = (playerId + 1) % 2;
                 gameStart = true;
 
-                if(playerId == 0) //create the first ball
-                    createBall(true);
+                createBall();
             }
         }
 
         int yChange = ((Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0)) * 2;
 
         if (Game.keyIsPressed(Keys.VK_L)){
-            createBall(true);
+            createBall();
         }
         
         y += yChange;
