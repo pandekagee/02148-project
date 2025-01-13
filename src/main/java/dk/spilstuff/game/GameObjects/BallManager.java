@@ -1,5 +1,7 @@
 package dk.spilstuff.game.GameObjects;
 
+import java.util.ArrayList;
+
 import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.Server.BallTeamInfo;
 import dk.spilstuff.engine.Game;
@@ -7,6 +9,7 @@ import dk.spilstuff.engine.GameObject;
 
 public class BallManager extends GameObject {
 
+    public ArrayList<Ball> ballList = new ArrayList<Ball>();
     Player player;
 
     public void setToBallInfo(Ball ball, BallInfo ballInfo) {
@@ -25,7 +28,9 @@ public class BallManager extends GameObject {
 
         while(ballInfo != null) {
             Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
-            ball.ballID = ballInfo.id;
+            ball.ballID = ballList.size();
+            ballList.add(ball);
+            
             ball.player = player;
             setToBallInfo(ball, ballInfo);
 
@@ -34,17 +39,12 @@ public class BallManager extends GameObject {
     }
 
     public Ball getBall(long id){
-        GameObject[] ballList = Game.getInstancesOfType(Ball.class);
-        Ball ball;
-
-        for (GameObject ballObj : ballList) {
-            ball = (Ball) ballObj;
-            if (ball.ballID == id){
-                return ball;
-            }
+        try {
+            return ballList.get((int)id);
         }
-
-        return null;
+        catch(IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     public void checkForPosition(){
