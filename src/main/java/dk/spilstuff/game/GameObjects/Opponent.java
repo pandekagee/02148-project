@@ -8,6 +8,8 @@ import dk.spilstuff.engine.GameObject;
 import dk.spilstuff.engine.Sprite;
 
 public class Opponent extends GameObject {
+    int hp = 3;
+    
     public void assignSide(int playerID) {
         Camera camera = Game.getCamera();
         

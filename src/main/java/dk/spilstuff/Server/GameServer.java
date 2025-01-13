@@ -3,7 +3,6 @@ package dk.spilstuff.Server;
 import java.io.IOException;
 
 import org.jspace.ActualField;
-import org.jspace.FormalField;
 import org.jspace.SequentialSpace;
 import org.jspace.SpaceRepository;
 

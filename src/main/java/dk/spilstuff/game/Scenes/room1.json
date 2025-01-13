@@ -13,6 +13,30 @@
             "y": 180,
             "xscale": 1,
             "yscale": 1
+        },
+        {
+            "depth": 0,
+            "yoffset": 1,
+            "rotation": 0,
+            "name": "BrickManager",
+            "x": 0,
+            "sprite": "",
+            "xoffset": 1,
+            "y": 0,
+            "xscale": 1,
+            "yscale": 1
+        },
+        {
+            "depth": 0,
+            "yoffset": 1,
+            "rotation": 0,
+            "name": "BallManager",
+            "x": 0,
+            "sprite": "",
+            "xoffset": 1,
+            "y": 0,
+            "xscale": 1,
+            "yscale": 1
         }
     ],
     "width": 640,

@@ -16,6 +16,7 @@ public class Player extends GameObject {
     boolean gameStart = false;
     int ballCounter = 0;
     private int playerIndicatorTimer = 0;
+    public int hp = 3;
 
     Camera camera;
 
@@ -29,29 +30,49 @@ public class Player extends GameObject {
         }
     }
 
-    private void checkForNewBalls() {
-        BallInfo ballInfo = Game.receiveValue(opponentID, "ballCreated", BallInfo.class);
+    public double[] getDamageScale(int hp){
+        double scaleOff = 2;
+        double xS = 8 * (hp+scaleOff) / (3+scaleOff);
+        double yS = 32 * (hp+scaleOff) / (3+scaleOff);
 
-        while(ballInfo != null) {
-            Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
-            ball.ballID = ballCounter;
-            ball.player = this;
-            ballCounter++;
+        return new double[] {xS, yS};
+    }
 
-            ball.setToBallInfo(ballInfo);
+    private void checkPlayerDeath(){
+        if (hp <= 0){
+            Game.destroy(this);
+        } else {
+            double[] scale = getDamageScale(hp);
+            xScale = scale[0];
+            yScale = scale[1];
+        }
+    }
 
-            ballInfo = Game.receiveValue(opponentID, "ballCreated", BallInfo.class);
+    public void updateOpponent(int playerID){
+        Integer data = Game.receiveValue(playerID, "updateOpponent", Integer.class);
+
+        if (data != null){
+            if (data > 0){
+                double[] scale = getDamageScale(data);
+                opponent.xScale = scale[0];
+                opponent.yScale = scale[1];
+            } else{
+                Game.destroy(opponent);
+            }
         }
     }
 
     private void createBall() {
         int startAngle = Mathf.intRandomRange(-80, 80) + (playerId == 0 ? 0 : 180);
 
+        ballCounter++;
+
         BallInfo ballInfo = new BallInfo(
-            x + (playerId == 0 ? 15 : -15),
+            x + (playerId == 0 ? 30 : -30),
             y,
             Mathf.lengthDirectionX(3, startAngle),
-            Mathf.lengthDirectionY(3, startAngle)
+            Mathf.lengthDirectionY(3, startAngle),
+            ballCounter
         );
 
         Game.sendValue(playerId, "ballCreated", ballInfo);
@@ -69,6 +90,8 @@ public class Player extends GameObject {
     public void createEvent() {
         super.createEvent();
 
+        camera = Game.getCamera();
+
         Game.sendValue(0, "join", 0);
 
         xScale = 8;
@@ -78,12 +101,14 @@ public class Player extends GameObject {
 
         assignSide(0);
         opponent.assignSide(1);
-
     }
 
     @Override
     public void updateEvent() {
         playerIndicatorTimer--;
+
+        checkPlayerDeath();
+        updateOpponent(playerId);
 
         if (!gameStart){
             Integer _playerId = Game.receiveInteger(0, "joinMessage");
@@ -98,11 +123,13 @@ public class Player extends GameObject {
 
                 createBall();
 
+                updateOpponent(opponentID);
+
                 playerIndicatorTimer = 8 * 60; // 8 seconds
             }
         }
 
-        int yChange = ((Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0)) * 2;
+        int yChange = ((Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0)) * 5;
 
         if (Game.keyIsPressed(Keys.VK_L)){
             createBall();
@@ -115,8 +142,6 @@ public class Player extends GameObject {
         }
 
         getOpponentY();
-
-        checkForNewBalls();
 
         camera = Game.getCamera();
         
