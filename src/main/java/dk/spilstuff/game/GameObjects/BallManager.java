@@ -11,6 +11,7 @@ public class BallManager extends GameObject {
 
     public ArrayList<Ball> ballList = new ArrayList<Ball>();
     Player player;
+    public int gameMode;
 
     public void setToBallInfo(Ball ball, BallInfo ballInfo) {
         ball.x = ballInfo.x;
@@ -80,6 +81,8 @@ public class BallManager extends GameObject {
         super.createEvent();
         
         player = (Player) Game.getInstancesOfType(Player.class)[0];
+
+        gameMode = Game.getActiveScene().getName().equals("rm_game1") ? 1 : 0;
     }
 
     @Override

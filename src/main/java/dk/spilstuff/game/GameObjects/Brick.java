@@ -13,8 +13,8 @@ public class Brick extends GameObject {
 
         sprite = new Sprite("whiteSquareBUILTIN", true);
 
-        xScale = 4;
-        yScale = 16;
+        xScale = 10;
+        yScale = 29;
     }
 
     @Override

@@ -22,6 +22,8 @@ public class Player extends GameObject {
 
     public Opponent opponent;
 
+    public int gameMode;
+
     private void getOpponentY(){
         Double _y = Game.receiveDouble(opponentID, "y");
 
@@ -92,7 +94,7 @@ public class Player extends GameObject {
 
         camera = Game.getCamera();
 
-        Game.sendValue(0, "join", 0);
+        gameMode = Game.getActiveScene().getName().equals("rm_game1") ? 0 : 1;
 
         xScale = 8;
         yScale = 32;
@@ -110,8 +112,12 @@ public class Player extends GameObject {
         checkPlayerDeath();
         updateOpponent(playerId);
 
+        if(Game.keyIsPressed(Keys.VK_ESCAPE)) {
+            Game.setActiveScene("_rm_menu"); //leave game
+        }
+
         if (!gameStart){
-            Integer _playerId = Game.receiveInteger(0, "joinMessage");
+            Integer _playerId = Game.receiveInteger(gameMode, "joinMessage");
 
             if (_playerId != null){
                 playerId = _playerId;
@@ -155,12 +161,13 @@ public class Player extends GameObject {
         String fpsString = "FPS: " + Game.getFPS() + "\nRFPS:" + Game.getRealFPS();
 
         if (!gameStart){
-            Game.drawText( Game.getTextFont("Mono"),"Waiting for opponent", -100, camera.getWidth() / 2 - 85, camera.getHeight() / 2 - 25 );    
+            Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"WAITING FOR OPPONENT", -100, camera.getWidth() / 2 - 140, camera.getHeight() / 2 - 25,1,1,0,Color.BLACK,1);
+            Game.drawText( Game.getTextFont("Retro.ttf"),"WAITING FOR OPPONENT", -100, camera.getWidth() / 2 - 140-2, camera.getHeight() / 2 - 25-2);    
         }
 
-        Game.drawText( Game.getTextFont("Mono"),fpsString,-100, camera.getX() + 10, camera.getY() + 20 );
+        Game.drawText( Game.getTextFont("Retro.ttf"),fpsString,-100, camera.getX() + 10, camera.getY() + 20 );
 
         if(playerIndicatorTimer > 0)
-            Game.drawTextScaled(Game.getTextFont("Mono"), playerId == 0 ? "<- You" : "You ->", depth, x + (playerId == 0 ? 40 : -80), y,1,1,0,Color.WHITE, Math.clamp(playerIndicatorTimer/120d, 0, 1));
+            Game.drawTextScaled(Game.getTextFont("Retro.ttf"), playerId == 0 ? "<- YOU" : "YOU ->", depth, x + (playerId == 0 ? 20 : -100), y,1,1,0,Color.WHITE, Math.clamp(playerIndicatorTimer/120d, 0, 1));
     }
 }

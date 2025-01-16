@@ -18,9 +18,15 @@ public class Ball extends GameObject {
 
     public long ballID;
     public int ballTeam = 0;
+    private double teamChangeTimer = 0;
     public Color[] ballColors = {Color.white, Color.red, Color.blue};
 
     private boolean isColliding = false;
+
+    private void changeTeam(int ballTeam) {
+        this.ballTeam = ballTeam;
+        teamChangeTimer = 30;
+    }
 
     private void damagePlayer(){
         player.hp -= 1;
@@ -30,23 +36,28 @@ public class Ball extends GameObject {
     private void playerCollision() {
 
         if (collisionMeeting(x+hsp, y, player)){
-            if(!isColliding) {
+            if(!isColliding && (player.gameMode == 0 || Mathf.sign(hsp) == (player.playerId == 0 ? -1 : 1))) {
                 double dir = Mathf.pointDirection(player.x, player.y, x-hsp, y-vsp);
 
                 if (ballTeam == 0){
-                    ballTeam = player.playerId+1;
+                    changeTeam(player.playerId+1);
                 } else{
                     if (ballTeam != player.playerId + 1){
                         damagePlayer();
+
+                        if(player.gameMode == 1) {
+                            changeTeam(player.playerId+1);
+                        }
                     }
                 }
 
-                if(Mathf.dcos(dir) * -Mathf.sign(hsp) < 0.17) { 
+                //correct the angle if it's very shallow
+                if(Mathf.dcos(dir) * -Mathf.sign(hsp) < 0.258) { 
                     if(dir > 180) {
-                        dir = 270 - Mathf.sign(hsp) * 10;
+                        dir = 270 - Mathf.sign(hsp) * 15;
                     }
                     else {
-                        dir = 90 + Mathf.sign(hsp) * 10;
+                        dir = 90 + Mathf.sign(hsp) * 15;
                     }
                 }
                 
@@ -124,17 +135,34 @@ public class Ball extends GameObject {
         if (y < 0 || y > camera.getHeight() - sprite.getWidth() / 2){
             vsp = -vsp;
         }
-
-        //screen-wrapping (if you miss a ball, your opponent gets it)
-        if(x < 0 || x > camera.getWidth()) {
-            Game.destroy(this);
+        
+        if(x < 0) {
+            if(player.gameMode == 0) {
+                hsp = -hsp;
+            }
+            else { //screenwrap and swap if colourswap gamemode
+                x = camera.getWidth();
+                changeTeam(2); //blue team's ball
+            }
         }
+        else if(x > camera.getWidth()) {
+            if(player.gameMode == 0) {
+                hsp = -hsp;
+            }
+            else { //screenwrap and swap if colourswap gamemode
+                x = 0;
+                changeTeam(1); //red team's ball
+            }
+        }
+
+        teamChangeTimer--;
     }
 
     @Override
     public void drawEvent() {
         drawSelf();
 
-        Game.drawText(Game.getTextFont("Mono"),""+ballID,0,x + 6, y + 6);
+        if(teamChangeTimer > 0)
+            Game.drawSpriteScaled(sprite, subimg, depth - 1, x, y, teamChangeTimer/15+1, teamChangeTimer/15+1, rotation, color, (30-teamChangeTimer)/30);
     }
 }

@@ -1,11 +1,13 @@
 package dk.spilstuff.game.GameObjects;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
+import dk.spilstuff.engine.Mathf;
 
 public class BrickManager extends GameObject {
 
@@ -17,6 +19,7 @@ public class BrickManager extends GameObject {
     Camera camera;
 
     Player player;
+    public int gameMode;
 
     public void destroyBrick(int Id){
         Brick brick = brickMap.get(Id);
@@ -27,12 +30,30 @@ public class BrickManager extends GameObject {
         }
     }
 
-    private void createBrick(int x, int y){
-        Brick brick = (Brick) Game.instantiate( x + camera.getWidth() / 2 - brickWidth / 2, y + camera.getHeight() / 2 - brickHeight / 2, "Brick");
+    private void createAllBricks() {
+        int w = 6;
+        int h = 6;
+
+        int bw = 10*2+2;
+        int bh = 29*2+2;
+
+        int cw = Game.getCamera().getWidth()/2;
+        int ch = Game.getCamera().getHeight()/2;
+
+        for(int i = 0; i < w; i++) {
+            for(int j = 0; j < h; j++) {
+                createBrick(cw + bw*i - (w-1)/2*bw - bw/2, ch + bh*j - (h-1)/2*bh - bh/2, Color.HSBtoRGB((i+j)/11f, 1f, 1f));
+            }
+        }
+    }
+
+    private void createBrick(int x, int y, int color){
+        Brick brick = (Brick) Game.instantiate( x, y, "Brick");
         
         brickMap.put(brickNumber, brick);
 
         brick.brickId = brickNumber;
+        brick.color = new Color(color);
         brickNumber++;
     }
 
@@ -43,11 +64,9 @@ public class BrickManager extends GameObject {
 
         player = (Player) Game.getInstancesOfType(Player.class)[0];
 
-        createBrick(0,0);
-        createBrick(0,brickHeight + 3);
-        createBrick(0,-(brickHeight + 3));
-        createBrick(0,(brickHeight + 3) * 2);
-        createBrick(0,-(brickHeight + 3) * 2);
+        gameMode = Game.getActiveScene().getName().equals("rm_game1") ? 1 : 0;
+
+        createAllBricks();
     }
 
     @Override

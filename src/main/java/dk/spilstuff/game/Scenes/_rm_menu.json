@@ -1,0 +1,23 @@
+{
+    "bgtype": 0,
+    "bg": "",
+    "objects": [
+        {
+            "depth": 0,
+            "yoffset": 0,
+            "rotation": 0,
+            "name": "Controller",
+            "x": 320,
+            "sprite": "whiteSquareBUILTIN",
+            "xoffset": 0,
+            "y": 180,
+            "xscale": 1,
+            "yscale": 1
+        }
+    ],
+    "width": 640,
+    "fps": 60,
+    "height": 360,
+    "camwidth": 640,
+    "camheight": 360
+}
