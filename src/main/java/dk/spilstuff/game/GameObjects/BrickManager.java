@@ -4,10 +4,10 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import dk.spilstuff.Server.BrickDestructInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
-import dk.spilstuff.engine.Mathf;
 
 public class BrickManager extends GameObject {
 
@@ -73,9 +73,19 @@ public class BrickManager extends GameObject {
     public void updateEvent(){
         super.updateEvent();
 
-        Integer Id = Game.receiveValue(player.playerId, "destroyBrick", Integer.class);
-        if (Id != null){
-            destroyBrick(Id);
+        BrickDestructInfo destructInfo = Game.receiveValue(player.playerId, "destroyBrick", BrickDestructInfo.class);
+
+
+        if (destructInfo != null){
+            if (destructInfo.team == 0){
+                
+            } else if (destructInfo.team == player.playerId+1){
+                player.opponentScore += 1;
+            } else{
+                player.playerScore += 1;
+            }
+
+            destroyBrick(destructInfo.id);
         }
     }
 

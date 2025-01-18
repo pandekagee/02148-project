@@ -2,6 +2,8 @@ package dk.spilstuff.game.GameObjects;
 
 import java.awt.Color;
 
+import static org.apache.commons.lang3.StringUtils.length;
+
 import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
@@ -17,6 +19,8 @@ public class Player extends GameObject {
     int ballCounter = 0;
     private int playerIndicatorTimer = 0;
     public int hp = 3;
+    public double playerScore = 0;
+    public double opponentScore = 0;
 
     Camera camera;
 
@@ -135,15 +139,15 @@ public class Player extends GameObject {
             }
         }
 
-        int yChange = ((Game.keyIsHeld(Keys.VK_S) ? 1 : 0) - (Game.keyIsHeld(Keys.VK_W) ? 1 : 0)) * 5;
-
         if (Game.keyIsPressed(Keys.VK_L)){
             createBall();
         }
         
-        y += yChange;
+        double prevY = y;
+        y = Game.getMouseY();
+        y = Math.clamp(y, yScale, camera.getHeight()-yScale);
 
-        if (yChange != 0){
+        if (y != prevY){
             Game.sendValue(playerId, "y", y);
         }
 
@@ -164,6 +168,11 @@ public class Player extends GameObject {
             Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"WAITING FOR OPPONENT", -100, camera.getWidth() / 2 - 140, camera.getHeight() / 2 - 25,1,1,0,Color.BLACK,1);
             Game.drawText( Game.getTextFont("Retro.ttf"),"WAITING FOR OPPONENT", -100, camera.getWidth() / 2 - 140-2, camera.getHeight() / 2 - 25-2);    
         }
+
+        //draw scores
+        Game.drawTextScaled( Game.getTextFont("Retro.ttf"),String.valueOf(playerScore), -100, 10, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
+        String str = String.valueOf(opponentScore);
+        Game.drawTextScaled( Game.getTextFont("Retro.ttf"), str , -100, camera.getWidth() - length(str) * 30, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
 
         Game.drawText( Game.getTextFont("Retro.ttf"),fpsString,-100, camera.getX() + 10, camera.getY() + 20 );
 

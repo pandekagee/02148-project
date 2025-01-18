@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.Server.BallTeamInfo;
+import dk.spilstuff.Server.BrickDestructInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
@@ -22,6 +23,16 @@ public class Ball extends GameObject {
     public Color[] ballColors = {Color.white, Color.red, Color.blue};
 
     private boolean isColliding = false;
+
+    private void increasePlayerScore(){
+        if (ballTeam == 0){
+
+        } else if (ballTeam == player.playerId+1){
+            player.opponentScore += 1;
+        } else{
+            player.playerScore += 1;
+        }
+    }
 
     private void changeTeam(int ballTeam) {
         this.ballTeam = ballTeam;
@@ -81,14 +92,20 @@ public class Ball extends GameObject {
             if (collisionMeeting(x+hsp, y, brick)){
                 hsp = -hsp;
                 brickLayout.destroyBrick(brick.brickId);
-                Game.sendValue(player.opponentID, "destroyBrick", brick.brickId);
+                
+                increasePlayerScore();
+
+                Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, ballTeam));
                 sendPosition(player.opponentID);
             }
 
             if (collisionMeeting(x, y+vsp, brick)){
                 vsp = -vsp;
                 brickLayout.destroyBrick(brick.brickId);
-                Game.sendValue(player.opponentID, "destroyBrick", brick.brickId);
+                
+                increasePlayerScore();
+                
+                Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, ballTeam));
                 sendPosition(player.opponentID);
             }
         }
@@ -132,13 +149,30 @@ public class Ball extends GameObject {
         playerCollision();
         brickCollision();
 
-        if (y < 0 || y > camera.getHeight() - sprite.getWidth() / 2){
+        if (y < -vsp || y > camera.getHeight() - sprite.getWidth() / 2 - vsp){
             vsp = -vsp;
+        }
+
+        double angle = Mathf.pointDirection(x, y, x+hsp, y+vsp);
+
+        if (ballTeam == 0){
+            motionSet(angle, 3);
+        } else if (player.playerId+1 == ballTeam){
+            motionSet(angle, (3 + player.playerScore / 5));
+        } else{
+            motionSet(angle, 3 + player.opponentScore / 5);
         }
         
         if(x < 0) {
             if(player.gameMode == 0) {
-                hsp = -hsp;
+                if (ballTeam == 2){
+                    hsp = -hsp;
+                } else if (player.playerId == 0){
+                    x = player.x;
+                    y = player.y;
+                    sendPosition(player.opponentID);
+                    damagePlayer();
+                }
             }
             else { //screenwrap and swap if colourswap gamemode
                 x = camera.getWidth();
@@ -147,7 +181,14 @@ public class Ball extends GameObject {
         }
         else if(x > camera.getWidth()) {
             if(player.gameMode == 0) {
-                hsp = -hsp;
+                if (ballTeam == 1){
+                    hsp = -hsp;
+                } else if (player.playerId == 1){
+                    x = player.x;
+                    y = player.y;
+                    sendPosition(player.opponentID);
+                    damagePlayer();
+                }
             }
             else { //screenwrap and swap if colourswap gamemode
                 x = 0;
