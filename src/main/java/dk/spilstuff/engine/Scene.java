@@ -15,20 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.*;
-import org.lwjgl.stb.*;
-import org.lwjgl.system.MemoryStack;
-import java.nio.charset.Charset;
-
 import static org.lwjgl.opengl.GL11.*;
-import dk.spilstuff.engine.Sprite.SpriteImage;
 
 public class Scene {
     private final String name;

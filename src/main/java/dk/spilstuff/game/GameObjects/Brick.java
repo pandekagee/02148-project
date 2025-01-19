@@ -39,17 +39,22 @@ public class Brick extends GameObject {
 
         sprite = new Sprite("whiteSquareBUILTIN", true);
 
-        xScale = 10;
-        yScale = 29;
+        xScale = 6;
+        yScale = 22;
+    }
+
+    @Override
+    public void updateEvent(){
+
     }
 
     @Override
     public void drawEvent(){
+        super.drawEvent();
+
         switch(brickType) {
             case 0: break; //do nothing
             case 1: Game.drawSpriteScaled(new Sprite("spr_ball",true),0,depth-1,x,y,1,1,0,Color.BLACK,1); break;
         }
-
-        drawSelf();
     }
 }

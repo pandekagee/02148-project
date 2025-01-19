@@ -172,7 +172,7 @@ public class Game {
 			throw new RuntimeException("Failed to create the GLFW window");
 
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
-		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+		glfwSetKeyCallback(window, (_, key, _, action, _) -> {
             if(action == GLFW_PRESS) {
                 try {
                     keyDifferences[key] = !heldKeys[key];
@@ -194,7 +194,7 @@ public class Game {
             }
 		});
 
-        glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
+        glfwSetMouseButtonCallback(window, (_, button, action, _) -> {
             if(action == GLFW_PRESS) {
                 mouseButtonDifferences[button] = !heldMouseButtons[button];
                 heldMouseButtons[button] = true;
@@ -217,11 +217,13 @@ public class Game {
 			GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 			// Center the window
-			glfwSetWindowPos(
-				window,
-				(vidmode.width() - pWidth.get(0)) / 2,
-				(vidmode.height() - pHeight.get(0)) / 2
-			);
+            if(vidmode != null) {
+                glfwSetWindowPos(
+                    window,
+                    (vidmode.width() - pWidth.get(0)) / 2,
+                    (vidmode.height() - pHeight.get(0)) / 2
+                );
+            }
 		} // the stack frame is popped automatically
 
 		// Make the OpenGL context current
@@ -524,7 +526,7 @@ public class Game {
      * @return The distance to the nearest instance of the GameObject given, or null if no such instance exists.
      */
     public static Double distanceNearestObject(double x, double y, Class<? extends GameObject> object) {
-        Double minD = null;
+        Double minD = Double.MAX_VALUE;
 
         for(GameObject o : getInstancesOfType(object)) {
             double d = Mathf.pointDistance(x, y, o.x, o.y);
@@ -652,11 +654,13 @@ public class Game {
                     GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         
                     // Center the window
-                    glfwSetWindowPos(
-                        window,
-                        (vidmode.width() - pWidth.get(0)) / 2,
-                        (vidmode.height() - pHeight.get(0)) / 2
-                    );
+                    if(vidmode != null) {
+                        glfwSetWindowPos(
+                            window,
+                            (vidmode.width() - pWidth.get(0)) / 2,
+                            (vidmode.height() - pHeight.get(0)) / 2
+                        );
+                    }
                 } // the stack frame is popped automatically
             }
         }
@@ -898,5 +902,43 @@ public class Game {
         }
     
         return null;
+    }
+
+    public static boolean removeValue(int playerId, String variable, int actualValue) {
+        try {
+            Future<Object[]> future = executor.submit(() -> 
+                lobby.getp(new ActualField(playerId), new ActualField(variable), new ActualField(actualValue))
+            );
+    
+            Object[] message = future.get();
+            
+            return (message != null);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Failed to receive data: " + e.getMessage());
+        } catch (ExecutionException e) {
+            System.err.println("Task execution failed: " + e.getCause().getMessage());
+        }
+    
+        return false;
+    }
+
+    public static boolean queryValue(int playerId, String variable, int actualValue) {
+        try {
+            Future<Object[]> future = executor.submit(() -> 
+                lobby.queryp(new ActualField(playerId), new ActualField(variable), new ActualField(actualValue))
+            );
+    
+            Object[] message = future.get();
+
+            return (message != null);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Failed to receive data: " + e.getMessage());
+        } catch (ExecutionException e) {
+            System.err.println("Task execution failed: " + e.getCause().getMessage());
+        }
+    
+        return false;
     }    
 }

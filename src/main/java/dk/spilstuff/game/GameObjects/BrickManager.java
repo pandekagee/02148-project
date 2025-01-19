@@ -22,22 +22,22 @@ public class BrickManager extends GameObject {
     Player player;
     public int gameMode;
 
-    public void destroyBrick(BallInfo ballInfo, int Id, boolean performEffect){
+    public void destroyBrick(BallInfo ballInfo, int Id){
         Brick brick = brickMap.get(Id);
         
         if (brick != null){
-            if(performEffect) brick.applyEffect(ballInfo);
+            if(Game.removeValue(0, "brick", Id)) brick.applyEffect(ballInfo);
             Game.destroy(brick);
             brickMap.remove(Id);
         }
     }
 
     private void createAllBricks() {
-        int w = 6;
-        int h = 6;
+        int w = 12;
+        int h = 8;
 
-        int bw = 10*2+2;
-        int bh = 29*2+2;
+        int bw = 6*2+2;
+        int bh = 22*2+2;
 
         int cw = Game.getCamera().getWidth()/2;
         int ch = Game.getCamera().getHeight()/2;
@@ -48,15 +48,16 @@ public class BrickManager extends GameObject {
             }
         }
 
-        // Extra balls
-        brickMap.get(7).brickType = 1;
-        brickMap.get(10).brickType = 1;
-        brickMap.get(14).brickType = 1;
-        brickMap.get(15).brickType = 1;
-        brickMap.get(20).brickType = 1;
-        brickMap.get(21).brickType = 1;
-        brickMap.get(25).brickType = 1;
-        brickMap.get(28).brickType = 1;
+        // Set special bricks
+            // Extra ball
+            brickMap.get(17).brickType = 1;
+            brickMap.get(26).brickType = 1;
+            brickMap.get(22).brickType = 1;
+            brickMap.get(29).brickType = 1;
+            brickMap.get(66).brickType = 1;
+            brickMap.get(73).brickType = 1;
+            brickMap.get(69).brickType = 1;
+            brickMap.get(78).brickType = 1;
     }
 
     private void createBrick(int x, int y, int color){
@@ -64,6 +65,7 @@ public class BrickManager extends GameObject {
         
         brickMap.put(brickNumber, brick);
 
+        if(!Game.queryValue(0, "brick", brickNumber)) Game.sendValue(0,"brick",brickNumber);
         brick.brickId = brickNumber;
         brick.color = new Color(color);
         brickNumber++;
@@ -97,7 +99,7 @@ public class BrickManager extends GameObject {
                 player.playerScore += 1;
             }
 
-            destroyBrick(destructInfo.ballInfo, destructInfo.id, false);
+            destroyBrick(destructInfo.ballInfo, destructInfo.id);
         }
     }
 
