@@ -29,6 +29,11 @@ public class BrickManager extends GameObject {
             if(Game.removeValue(0, "brick", Id)) brick.applyEffect(ballInfo);
             Game.destroy(brick);
             brickMap.remove(Id);
+
+            InactiveBrick inactiveBrick = (InactiveBrick)Game.instantiate(brick.x, brick.y, brick.xScale, brick.yScale, brick.rotation, brick.depth, brick.sprite, "InactiveBrick");
+            inactiveBrick.brickId = brick.brickId;
+            inactiveBrick.brickType = brick.brickType;
+            inactiveBrick.color = brick.color;
         }
     }
 
@@ -44,7 +49,7 @@ public class BrickManager extends GameObject {
 
         for(int i = 0; i < w; i++) {
             for(int j = 0; j < h; j++) {
-                createBrick(cw + bw*i - (w-1)/2*bw - bw/2, ch + bh*j - (h-1)/2*bh - bh/2, Color.HSBtoRGB((float)(i+j)/(w+h), 1f, 1f));
+                createBrickInitial(cw + bw*i - (w-1)/2*bw - bw/2, ch + bh*j - (h-1)/2*bh - bh/2, Color.HSBtoRGB((float)(i+j)/(w+h), 1f, 1f));
             }
         }
 
@@ -60,7 +65,7 @@ public class BrickManager extends GameObject {
             brickMap.get(86).brickType = 1;
     }
 
-    private void createBrick(int x, int y, int color){
+    public void createBrickInitial(int x, int y, int color){
         Brick brick = (Brick) Game.instantiate( x, y, "Brick");
         
         brickMap.put(brickNumber, brick);
@@ -69,6 +74,17 @@ public class BrickManager extends GameObject {
         brick.brickId = brickNumber;
         brick.color = new Color(color);
         brickNumber++;
+    }
+
+    public void createBrick(int x, int y, int color, int id, int brickType){
+        Brick brick = (Brick) Game.instantiate( x, y, "Brick");
+        
+        brickMap.put(id, brick);
+
+        if(!Game.queryValue(0, "brick", id)) Game.sendValue(0,"brick",id);
+        brick.brickId = id;
+        brick.color = new Color(color);
+        brick.brickType = brickType;
     }
 
     @Override
