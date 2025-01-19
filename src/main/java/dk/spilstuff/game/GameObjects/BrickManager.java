@@ -33,7 +33,7 @@ public class BrickManager extends GameObject {
     }
 
     private void createAllBricks() {
-        int w = 12;
+        int w = 14;
         int h = 8;
 
         int bw = 6*2+2;
@@ -44,20 +44,20 @@ public class BrickManager extends GameObject {
 
         for(int i = 0; i < w; i++) {
             for(int j = 0; j < h; j++) {
-                createBrick(cw + bw*i - (w-1)/2*bw - bw/2, ch + bh*j - (h-1)/2*bh - bh/2, Color.HSBtoRGB((i+j)/11f, 1f, 1f));
+                createBrick(cw + bw*i - (w-1)/2*bw - bw/2, ch + bh*j - (h-1)/2*bh - bh/2, Color.HSBtoRGB((float)(i+j)/(w+h), 1f, 1f));
             }
         }
 
         // Set special bricks
             // Extra ball
-            brickMap.get(17).brickType = 1;
-            brickMap.get(26).brickType = 1;
-            brickMap.get(22).brickType = 1;
-            brickMap.get(29).brickType = 1;
-            brickMap.get(66).brickType = 1;
-            brickMap.get(73).brickType = 1;
-            brickMap.get(69).brickType = 1;
-            brickMap.get(78).brickType = 1;
+            brickMap.get(25).brickType = 1;
+            brickMap.get(81).brickType = 1;
+            brickMap.get(34).brickType = 1;
+            brickMap.get(74).brickType = 1;
+            brickMap.get(37).brickType = 1;
+            brickMap.get(77).brickType = 1;
+            brickMap.get(30).brickType = 1;
+            brickMap.get(86).brickType = 1;
     }
 
     private void createBrick(int x, int y, int color){

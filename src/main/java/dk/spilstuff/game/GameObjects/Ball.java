@@ -34,7 +34,7 @@ public class Ball extends GameObject {
         }
     }
 
-    private void changeTeam(int ballTeam) {
+    public void changeTeam(int ballTeam) {
         this.ballTeam = ballTeam;
         teamChangeTimer = 30;
     }

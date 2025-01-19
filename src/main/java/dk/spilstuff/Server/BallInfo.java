@@ -14,7 +14,7 @@ public class BallInfo {
         this.hsp = hsp;
         this.vsp = vsp;
         this.id = id;
-        this.team = 1;
+        this.team = 0;
     }
 
     public BallInfo(double x, double y, double hsp, double vsp, long id, int team) {

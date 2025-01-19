@@ -34,6 +34,7 @@ public class BallManager extends GameObject {
             
             ball.player = player;
             setToBallInfo(ball, ballInfo);
+            ball.changeTeam(ballInfo.team);
 
             ballInfo = Game.receiveValue(player.opponentID, "ballCreated", BallInfo.class);
         }

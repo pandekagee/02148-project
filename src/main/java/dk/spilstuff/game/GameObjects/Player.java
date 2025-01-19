@@ -75,7 +75,8 @@ public class Player extends GameObject {
             y,
             Mathf.lengthDirectionX(3, startAngle),
             Mathf.lengthDirectionY(3, startAngle),
-            0
+            0,
+            playerId + 1
         );
 
         Game.sendValue(playerId, "ballCreated", ballInfo);
