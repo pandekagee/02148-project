@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.Server.BrickDestructInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
@@ -21,10 +22,11 @@ public class BrickManager extends GameObject {
     Player player;
     public int gameMode;
 
-    public void destroyBrick(int Id){
+    public void destroyBrick(BallInfo ballInfo, int Id, boolean performEffect){
         Brick brick = brickMap.get(Id);
         
         if (brick != null){
+            if(performEffect) brick.applyEffect(ballInfo);
             Game.destroy(brick);
             brickMap.remove(Id);
         }
@@ -45,6 +47,16 @@ public class BrickManager extends GameObject {
                 createBrick(cw + bw*i - (w-1)/2*bw - bw/2, ch + bh*j - (h-1)/2*bh - bh/2, Color.HSBtoRGB((i+j)/11f, 1f, 1f));
             }
         }
+
+        // Extra balls
+        brickMap.get(7).brickType = 1;
+        brickMap.get(10).brickType = 1;
+        brickMap.get(14).brickType = 1;
+        brickMap.get(15).brickType = 1;
+        brickMap.get(20).brickType = 1;
+        brickMap.get(21).brickType = 1;
+        brickMap.get(25).brickType = 1;
+        brickMap.get(28).brickType = 1;
     }
 
     private void createBrick(int x, int y, int color){
@@ -77,15 +89,15 @@ public class BrickManager extends GameObject {
 
 
         if (destructInfo != null){
-            if (destructInfo.team == 0){
+            if (destructInfo.ballInfo.team == 0){
                 
-            } else if (destructInfo.team == player.playerId+1){
+            } else if (destructInfo.ballInfo.team == player.playerId+1){
                 player.opponentScore += 1;
             } else{
                 player.playerScore += 1;
             }
 
-            destroyBrick(destructInfo.id);
+            destroyBrick(destructInfo.ballInfo, destructInfo.id, false);
         }
     }
 

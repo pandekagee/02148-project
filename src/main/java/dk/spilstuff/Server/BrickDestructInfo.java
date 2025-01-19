@@ -2,10 +2,10 @@ package dk.spilstuff.Server;
 
 public class BrickDestructInfo {
     public final Integer id;
-    public final int team;
+    public final BallInfo ballInfo;
 
-    public BrickDestructInfo(Integer id, int team) {
+    public BrickDestructInfo(Integer id, BallInfo ballInfo) {
         this.id = id;
-        this.team = team;
+        this.ballInfo = ballInfo;
     }
 }

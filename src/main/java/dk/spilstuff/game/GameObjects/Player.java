@@ -16,7 +16,6 @@ public class Player extends GameObject {
     int playerId = 1;
     int opponentID = 0;
     boolean gameStart = false;
-    int ballCounter = 0;
     private int playerIndicatorTimer = 0;
     public int hp = 3;
     public double playerScore = 0;
@@ -71,14 +70,12 @@ public class Player extends GameObject {
     private void createBall() {
         int startAngle = Mathf.intRandomRange(-80, 80) + (playerId == 0 ? 0 : 180);
 
-        ballCounter++;
-
         BallInfo ballInfo = new BallInfo(
             x + (playerId == 0 ? 30 : -30),
             y,
             Mathf.lengthDirectionX(3, startAngle),
             Mathf.lengthDirectionY(3, startAngle),
-            ballCounter
+            0
         );
 
         Game.sendValue(playerId, "ballCreated", ballInfo);

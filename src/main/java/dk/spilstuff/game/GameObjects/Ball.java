@@ -89,23 +89,28 @@ public class Ball extends GameObject {
         Brick brick = (Brick) Game.nearestInstance(x, y, Brick.class);
 
         if (brick != null){
+            boolean collided = false;
+            
             if (collisionMeeting(x+hsp, y, brick)){
                 hsp = -hsp;
-                brickLayout.destroyBrick(brick.brickId);
-                
-                increasePlayerScore();
 
-                Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, ballTeam));
-                sendPosition(player.opponentID);
+                collided = true;
             }
 
             if (collisionMeeting(x, y+vsp, brick)){
                 vsp = -vsp;
-                brickLayout.destroyBrick(brick.brickId);
+
+                collided = true;
+            }
+
+            if(collided) {
+                BallInfo _ballInfo = new BallInfo(x,y,hsp,vsp,ballID,ballTeam); 
+
+                brickLayout.destroyBrick(_ballInfo, brick.brickId, true);
                 
                 increasePlayerScore();
-                
-                Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, ballTeam));
+
+                Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, _ballInfo));
                 sendPosition(player.opponentID);
             }
         }
