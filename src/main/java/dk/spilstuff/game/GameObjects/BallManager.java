@@ -3,7 +3,6 @@ package dk.spilstuff.game.GameObjects;
 import java.util.ArrayList;
 
 import dk.spilstuff.Server.BallInfo;
-import dk.spilstuff.Server.BallTeamInfo;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
 
@@ -18,26 +17,23 @@ public class BallManager extends GameObject {
         ball.y = ballInfo.y;
         ball.hsp = ballInfo.hsp;
         ball.vsp = ballInfo.vsp;
+        ball.ballTeam = ballInfo.team;
     }
 
-    public void setToBallTeam(Ball ball, BallTeamInfo ballTeamInfo) {
-        ball.ballTeam = ballTeamInfo.team;
-    }
-
-    private void checkForNewBalls() {
-        BallInfo ballInfo = Game.receiveValue(player.opponentID, "ballCreated", BallInfo.class);
-
-        while(ballInfo != null) {
-            Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
-            ball.ballID = ballList.size();
-            ballList.add(ball);
-            
-            ball.player = player;
-            setToBallInfo(ball, ballInfo);
-            ball.changeTeam(ballInfo.team);
-
-            ballInfo = Game.receiveValue(player.opponentID, "ballCreated", BallInfo.class);
-        }
+    private void checkForNewBalls(){
+        Game.receiveValue(player.opponentID, "ballCreated", BallInfo.class)
+        .thenAccept(ballInfos -> {
+            for(BallInfo ballInfo : ballInfos) {
+                
+                Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
+                ball.ballID = ballList.size();
+                ballList.add(ball);
+                
+                ball.player = player;
+                setToBallInfo(ball, ballInfo);
+                ball.changeTeam(ballInfo.team);
+            }
+        });
     }
 
     public Ball getBall(long id){
@@ -49,36 +45,19 @@ public class BallManager extends GameObject {
         }
     }
 
-    public void checkForPosition(){
-        BallInfo ballInfo;
-        
-        do{
-            ballInfo = Game.receiveValue(player.playerId, "ballInfo", BallInfo.class);
-            
-            if (ballInfo != null){
+    public void checkForBallInfo(){
+        Game.receiveValue(player.playerId, "ballInfo", BallInfo.class)
+        .thenAccept(ballInfos -> {
+            for(BallInfo ballInfo : ballInfos) {
                 Ball ball = getBall(ballInfo.id);
-
+                
                 setToBallInfo(ball, ballInfo);
 
                 if(ballInfo.hitByPaddle) {
                     player.opponent.ballHitTimer = 30;
                 }
             }
-        } while(ballInfo != null);
-    }
-
-    public void checkForTeam(){
-        BallTeamInfo ballTeamInfo;
-        
-        do{
-            ballTeamInfo = Game.receiveValue(player.playerId, "ballTeamInfo", BallTeamInfo.class);
-            
-            if (ballTeamInfo != null){
-                Ball ball = getBall(ballTeamInfo.id);
-
-                setToBallTeam(ball, ballTeamInfo);
-            }
-        } while(ballTeamInfo != null);
+        });
     }
 
     @Override
@@ -95,8 +74,7 @@ public class BallManager extends GameObject {
         super.updateEvent();
 
         checkForNewBalls();
-        checkForTeam();
-        checkForPosition();
+        checkForBallInfo();
 
 
     }

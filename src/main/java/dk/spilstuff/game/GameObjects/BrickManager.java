@@ -109,20 +109,20 @@ public class BrickManager extends GameObject {
     public void updateEvent(){
         super.updateEvent();
 
-        BrickDestructInfo destructInfo = Game.receiveValue(player.playerId, "destroyBrick", BrickDestructInfo.class);
-
-
-        if (destructInfo != null){
-            if (destructInfo.ballInfo.team == 0){
-                
-            } else if (destructInfo.ballInfo.team == player.playerId+1){
-                player.opponentScore++;
-            } else{
-                player.playerScore++;
+        Game.receiveValue(player.playerId, "destroyBrick", BrickDestructInfo.class)
+        .thenAccept(destructInfos -> {
+            for(BrickDestructInfo destructInfo : destructInfos) {
+                if (destructInfo.ballInfo.team == 0){
+                    
+                } else if (destructInfo.ballInfo.team == player.playerId+1){
+                    player.opponentScore++;
+                } else{
+                    player.playerScore++;
+                }
+    
+                destroyBrick(destructInfo.ballInfo, destructInfo.id);
             }
-
-            destroyBrick(destructInfo.ballInfo, destructInfo.id);
-        }
+        });
     }
 
     @Override

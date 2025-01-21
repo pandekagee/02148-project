@@ -26,10 +26,13 @@ public class GameServer {
                     int gameMode = (int)lobby.get(new ActualField(0), new ActualField("join"), new FormalField(Integer.class))[2];
 
                     lobbyCounts[gameMode]++;
+
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     System.out.println("Thread interrupted, exiting loop.");
                     break;
                 }
+
             }
         });
 
@@ -48,6 +51,8 @@ public class GameServer {
                     lobby.put(i, "joinMessage", 1);
                 }
             }
+
+            Thread.sleep(1000);
         }
     }
 }

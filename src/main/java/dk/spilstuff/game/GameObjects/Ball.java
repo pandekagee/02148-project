@@ -3,7 +3,6 @@ package dk.spilstuff.game.GameObjects;
 import java.awt.Color;
 
 import dk.spilstuff.Server.BallInfo;
-import dk.spilstuff.Server.BallTeamInfo;
 import dk.spilstuff.Server.BrickDestructInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
@@ -74,8 +73,7 @@ public class Ball extends GameObject {
                 
                 motionSet(dir, 3);
 
-                sendTeam(player.opponentID);
-                sendPosition(player.opponentID, true);
+                sendInfo(player.opponentID, true);
 
                 player.ballHitTimer = 30;
             }
@@ -114,7 +112,7 @@ public class Ball extends GameObject {
                     increasePlayerScore();
 
                     Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, _ballInfo));
-                    sendPosition(player.opponentID, false);
+                    sendInfo(player.opponentID, false);
                 }
             }
         }
@@ -125,14 +123,9 @@ public class Ball extends GameObject {
         vsp = Mathf.lengthDirectionY(speed, angle);
     }
 
-    private void sendPosition(int playerID, boolean hitByPaddle) {
+    private void sendInfo(int playerID, boolean hitByPaddle) {
         BallInfo ballInfo = new BallInfo(x, y, hsp, vsp, ballID, ballTeam, hitByPaddle);
         Game.sendValue(playerID, "ballInfo", ballInfo);
-    }
-
-    private void sendTeam(int playerID) {
-        BallTeamInfo ballTeamInfo = new BallTeamInfo(ballID, ballTeam);
-        Game.sendValue(playerID, "ballTeamInfo", ballTeamInfo);
     }
 
     @Override
@@ -179,7 +172,7 @@ public class Ball extends GameObject {
                 } else if (player.playerId == 0){
                     x = player.x;
                     y = player.y;
-                    sendPosition(player.opponentID, false);
+                    sendInfo(player.opponentID, false);
                     damagePlayer();
                 }
             }
@@ -195,7 +188,7 @@ public class Ball extends GameObject {
                 } else if (player.playerId == 1){
                     x = player.x;
                     y = player.y;
-                    sendPosition(player.opponentID, false);
+                    sendInfo(player.opponentID, false);
                     damagePlayer();
                 }
             }

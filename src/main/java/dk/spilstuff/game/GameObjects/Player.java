@@ -105,11 +105,10 @@ public class Player extends GameObject {
     }
 
     public void updateOpponent(int playerID){
-        OpponentInfo opponentInfo;
-
-        do{
-            opponentInfo = Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class);
-            if (opponentInfo != null){
+        Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class)
+        .thenAccept(opponentInfos -> {
+            if (opponentInfos.size() != 0){
+                OpponentInfo opponentInfo = opponentInfos.getLast();
                 opponent.hp = opponentInfo.hp;
                 opponent.powerupTimer = opponentInfo.powerupTimer;
                 opponent.newY = opponentInfo.y;
@@ -118,7 +117,7 @@ public class Player extends GameObject {
                     destroyAllBalls();
                 }
             }
-        } while(opponentInfo != null);
+        });
     }
 
     private void createBall() {
@@ -186,7 +185,7 @@ public class Player extends GameObject {
         }
 
         if (!gameStart){
-            Integer _playerId = Game.receiveInteger(gameMode, "joinMessage");
+            Integer _playerId = Game.receiveValueSync(gameMode, "joinMessage", Integer.class);
 
             if (_playerId != null){
                 playerId = _playerId;
@@ -204,11 +203,11 @@ public class Player extends GameObject {
             }
         }
         
-        double prevY = y;
         y = Game.getMouseY();
         y = Math.clamp(y, 32*yScale, camera.getHeight()-32*yScale);
         
-        sendInfo();
+        if(gameStart)
+            sendInfo();
 
         camera = Game.getCamera();
         

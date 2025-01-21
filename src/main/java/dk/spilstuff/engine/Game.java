@@ -12,6 +12,7 @@ import dk.spilstuff.engine.gen.Fontsheet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 
 import org.jspace.ActualField;
 import org.jspace.FormalField;
@@ -29,12 +30,15 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.awt.Font;
+import java.awt.List;
 
 public class Game {
     private static boolean[] heldKeys;
@@ -873,41 +877,36 @@ public class Game {
         });
     }
 
-    public static Integer receiveInteger(int playerId, String variable) {
-        return receiveValue(playerId, variable, Integer.class);
-    }
-
-    public static String receiveString(int playerId, String variable) {
-        return receiveValue(playerId, variable, String.class);
-    }
-
-    public static Double receiveDouble(int playerId, String variable) {
-        return receiveValue(playerId, variable, Double.class);
-    }
-
-    public static <T> T receiveValue(int playerId, String variable, Class<T> type) {
+    public static <T> T receiveValueSync(int playerId, String variable, Class<T> type) {
         try {
+            Object[] message = lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(type));
             
-            if (lobbyUpdateAlarm == 0){
-                Future<Object[]> future = executor.submit(() -> 
-                    lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(type))
-                );
-
-                Object[] message = future.get();
-                if (message != null) {
-                    return type.cast(message[2]);
-                }
-            } else{
-                return null;
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.err.println("Failed to receive data: " + e.getMessage());
-        } catch (ExecutionException e) {
-            System.err.println("Task execution failed: " + e.getCause().getMessage());
+            return type.cast(message[2]);
         }
-    
-        return null;
+        catch(Exception e) {
+            return null;
+        }
+    }
+
+    public static <T> CompletableFuture<ArrayList<T>> receiveValue(int playerId, String variable, Class<T> type) {
+        if(lobbyUpdateAlarm == 0)
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    var messages = lobby.getAll(new ActualField(playerId), new ActualField(variable), new FormalField(type));
+                    
+                    ArrayList<T> list = new ArrayList<T>();
+
+                    for(int i = 0; i < messages.size(); i++) {
+                        list.add(type.cast(messages.get(i)[2]));
+                    }
+
+                    return list;
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to receive data", e);
+                }
+            }, executor);
+        
+        return CompletableFuture.completedFuture(new ArrayList<T>());
     }
 
     public static boolean removeValue(int playerId, String variable, int actualValue) {
