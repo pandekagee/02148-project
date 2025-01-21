@@ -226,7 +226,6 @@ public class Spritesheet {
 
             try {
                 order = Integer.parseInt(name.split("_")[name.split("_").length - 1].split("\\.")[0]);
-                System.out.println("Handling " + name + " with order " + order);
             }
             catch(NumberFormatException e) {
                 Logger.addLog("\n");
