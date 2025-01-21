@@ -30,6 +30,11 @@ public class Brick extends GameObject {
                 Game.sendValue(0, "ballCreated", _ballInfo);
                 Game.sendValue(1, "ballCreated", _ballInfo);
             break;
+            case 2: // powerup
+                Powerup powerup = (Powerup)Game.instantiate(x, y, "Powerup");
+            
+                powerup.hsp = ballInfo.team == 1 ? -2 : 2;
+            break;
         }
     }
 
@@ -52,6 +57,7 @@ public class Brick extends GameObject {
         switch(brickType) {
             case 0: break; //do nothing
             case 1: Game.drawSpriteScaled(new Sprite("spr_ball",true),0,depth-1,x,y,1,1,0,Color.BLACK,1); break;
+            case 2: Game.drawSpriteScaled(new Sprite("spr_powerup",true),0,depth-1,x,y,0.5,0.5,0,Color.BLACK,1); break;
         }
     }
 }

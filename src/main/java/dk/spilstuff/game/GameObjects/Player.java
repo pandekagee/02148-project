@@ -5,6 +5,7 @@ import java.awt.Color;
 import static org.apache.commons.lang3.StringUtils.length;
 
 import dk.spilstuff.Server.BallInfo;
+import dk.spilstuff.Server.OpponentInfo;
 import dk.spilstuff.engine.Camera;
 import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
@@ -19,6 +20,8 @@ public class Player extends GameObject {
     boolean gameStart = false;
     private int playerIndicatorTimer = 0;
     public int ballHitTimer = 0;
+    public int powerupTimer = 0;
+    private int powerupTimerMax = 15*60; //15 seconds
     public int hp = 15;
     public int playerScore = 0;
     public int opponentScore = 0;
@@ -58,20 +61,30 @@ public class Player extends GameObject {
         }
     }
 
-    private void getOpponentY(){
-        Double _y = Game.receiveDouble(opponentID, "y");
+    public void checkForPowerupCollision() {
+        GameObject powerup = Game.nearestInstance(x, y, Powerup.class);
 
-        if (_y != null){
-            opponent.y = _y;
+        if(powerup != null && powerup.alpha > 0.95 && Game.instanceColliding(this, powerup)) {
+            powerup.alpha = 0.9;
+            powerupTimer = (powerupTimer > 0) ? powerupTimerMax - 15 : powerupTimerMax;
+            sendInfo();
         }
     }
 
-    public double[] getDamageScale(int hp){
-        double scaleOff = 2;
-        double xS = (hp+scaleOff) / (3+scaleOff);
-        double yS = (hp+scaleOff) / (3+scaleOff);
+    public void setDamageScale(int hp){
+        yScale = (hp+2d) / (15+2d);
 
-        return new double[] {xS, yS};
+        if(powerupTimer > 0) {
+            if(powerupTimer < 15) { //about to end
+                yScale *= 1 + powerupTimer/15d;
+            }
+            else if(powerupTimer > powerupTimerMax-15) { //just started
+                yScale *= 1 + (1-(powerupTimer - (powerupTimerMax-15))/15d);
+            }
+            else {
+                yScale *= 2;
+            }
+        }
     }
 
     private void checkPlayerDeath(){
@@ -79,22 +92,24 @@ public class Player extends GameObject {
             yScale = 0;
             destroyAllBalls();
         } else {
-            double[] scale = getDamageScale(hp);
-            xScale = scale[0];
-            yScale = scale[1];
+            setDamageScale(hp);
         }
 
         winEvent();
     }
 
-    public void updateOpponent(int playerID){
-        Integer data = Game.receiveValue(playerID, "updateOpponent", Integer.class);
+    public void sendInfo() {
+        Game.sendValue(opponentID, "updateOpponent", new OpponentInfo(y, hp, powerupTimer));
+    }
 
-        if (data != null){
-            if (data > 0){
-                double[] scale = getDamageScale(data);
-                opponent.xScale = scale[0];
-                opponent.yScale = scale[1];
+    public void updateOpponent(int playerID){
+        OpponentInfo opponentInfo = Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class);
+
+        if (opponentInfo != null){
+            if (opponentInfo.hp > 0){
+                opponent.hp = opponentInfo.hp;
+                opponent.powerupTimer = opponentInfo.powerupTimer;
+                opponent.y = opponentInfo.y;
             } else{
                 opponent.yScale = 0;
                 destroyAllBalls();
@@ -147,9 +162,14 @@ public class Player extends GameObject {
     public void updateEvent() {
         playerIndicatorTimer--;
         ballHitTimer--;
+        if(powerupTimer > 0)
+            powerupTimer--;
 
         checkPlayerDeath();
         updateOpponent(playerId);
+        setDamageScale(hp);
+
+        checkForPowerupCollision();
 
         if(Game.keyIsPressed(Keys.VK_ESCAPE)) {
             Game.setActiveScene("_rm_menu"); //leave game
@@ -176,13 +196,11 @@ public class Player extends GameObject {
         
         double prevY = y;
         y = Game.getMouseY();
-        y = Math.clamp(y, yScale, camera.getHeight()-yScale);
+        y = Math.clamp(y, 32*yScale, camera.getHeight()-32*yScale);
 
         if (y != prevY){
-            Game.sendValue(playerId, "y", y);
+            sendInfo();
         }
-
-        getOpponentY();
 
         camera = Game.getCamera();
         
@@ -208,8 +226,8 @@ public class Player extends GameObject {
         }
 
         //draw scores
-        int leftScore = playerId == 0 ? playerScore : opponentScore;
-        int rightScore = playerId == 0 ? opponentScore : playerScore;
+        int leftScore = playerId == 1 ? playerScore : opponentScore;
+        int rightScore = playerId == 1 ? opponentScore : playerScore;
 
         Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"Score: "+leftScore, -100, 10, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
         Game.drawTextScaled( Game.getTextFont("Retro.ttf"), "Score: "+rightScore , -100, camera.getWidth() - length("Score: "+rightScore) * 15, camera.getHeight() - 25,1,1,0,Color.WHITE,1);

@@ -26,7 +26,7 @@ public class BrickManager extends GameObject {
         Brick brick = brickMap.get(Id);
         
         if (brick != null){
-            if(Game.removeValue(0, "brick", Id)) brick.applyEffect(ballInfo);
+            if(brick.brickType != 1 || Game.removeValue(0, "brick", Id)) brick.applyEffect(ballInfo);
             Game.destroy(brick);
             brickMap.remove(Id);
 
@@ -63,6 +63,12 @@ public class BrickManager extends GameObject {
             brickMap.get(77).brickType = 1;
             brickMap.get(30).brickType = 1;
             brickMap.get(86).brickType = 1;
+
+            // Powerup
+            brickMap.get(88).brickType = 2;
+            brickMap.get(43).brickType = 2;
+            brickMap.get(68).brickType = 2;
+            brickMap.get(23).brickType = 2;
     }
 
     public void createBrickInitial(int x, int y, int color){

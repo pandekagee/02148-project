@@ -40,8 +40,8 @@ public class Ball extends GameObject {
     }
 
     private void damagePlayer(){
-        player.hp -= 1;
-        Game.sendValue(player.opponentID, "updateOpponent", player.hp);
+        player.hp--;
+        player.sendInfo();
     }
 
     private void playerCollision() {
