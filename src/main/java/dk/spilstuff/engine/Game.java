@@ -12,7 +12,6 @@ import dk.spilstuff.engine.gen.Fontsheet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 
 import org.jspace.ActualField;
 import org.jspace.FormalField;
@@ -30,7 +29,6 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.awt.Font;
-import java.awt.List;
 
 public class Game {
     private static boolean[] heldKeys;
@@ -907,18 +904,12 @@ public class Game {
 
     public static boolean removeValue(int playerId, String variable, int actualValue) {
         try {
-            Future<Object[]> future = executor.submit(() -> 
-                lobby.getp(new ActualField(playerId), new ActualField(variable), new ActualField(actualValue))
-            );
-    
-            Object[] message = future.get();
+            Object[] message = lobby.getp(new ActualField(playerId), new ActualField(variable), new ActualField(actualValue));
             
             return (message != null);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.err.println("Failed to receive data: " + e.getMessage());
-        } catch (ExecutionException e) {
-            System.err.println("Task execution failed: " + e.getCause().getMessage());
         }
     
         return false;
@@ -926,18 +917,12 @@ public class Game {
 
     public static boolean queryValue(int playerId, String variable, int actualValue) {
         try {
-            Future<Object[]> future = executor.submit(() -> 
-                lobby.queryp(new ActualField(playerId), new ActualField(variable), new ActualField(actualValue))
-            );
-    
-            Object[] message = future.get();
+            Object[] message = lobby.queryp(new ActualField(playerId), new ActualField(variable), new ActualField(actualValue));
 
             return (message != null);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.err.println("Failed to receive data: " + e.getMessage());
-        } catch (ExecutionException e) {
-            System.err.println("Task execution failed: " + e.getCause().getMessage());
         }
     
         return false;

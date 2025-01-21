@@ -26,7 +26,7 @@ public class BrickManager extends GameObject {
         Brick brick = brickMap.get(Id);
         
         if (brick != null){
-            if(brick.brickType != 1 || Game.removeValue(0, "brick", Id)) brick.applyEffect(ballInfo);
+            if(Game.removeValue(0, "brick", Id) || brick.brickType != 1) brick.applyEffect(ballInfo);
             Game.destroy(brick);
             brickMap.remove(Id);
 

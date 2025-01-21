@@ -1,6 +1,8 @@
 package dk.spilstuff.game.GameObjects;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import dk.spilstuff.Server.BallInfo;
 import dk.spilstuff.engine.Game;
@@ -33,6 +35,14 @@ public class BallManager extends GameObject {
         if(player.performUpdate)
         Game.receiveValue(player.playerId, "ballInfo", BallInfo.class)
         .thenAccept(ballInfos -> {
+            if(ballInfos.size() > 1)
+                Collections.sort(ballInfos, new Comparator<BallInfo>() {
+                    public int compare (BallInfo o1, BallInfo o2) {
+                        int comp = (int)o1.id - (int)o2.id;
+                        return comp;
+                    }
+                });
+
             for(BallInfo ballInfo : ballInfos) {
                 Ball ball = getBall(ballInfo.id);
                 
