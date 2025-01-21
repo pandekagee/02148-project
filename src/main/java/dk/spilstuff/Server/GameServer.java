@@ -28,7 +28,7 @@ public class GameServer {
                     lobbyCounts[gameMode]++;
                 } catch (InterruptedException e) {
                     System.out.println("Thread interrupted, exiting loop.");
-                    break; // Exit the loop if interrupted
+                    break;
                 }
             }
         });
@@ -43,7 +43,7 @@ public class GameServer {
                     lobbyCounts[i] = 0;
                     
                     System.out.println("Gamemode " + i + " start message sent to both players.");
-
+                    lobby.getAll();
                     lobby.put(i, "joinMessage", 0);
                     lobby.put(i, "joinMessage", 1);
                 }
