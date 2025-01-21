@@ -15,7 +15,7 @@ public class InactiveBrick extends GameObject {
 
     private int respawnTimer = 0;
 
-    private final double respawnTimerMax = 40 * 60; // 40 seconds
+    private final double respawnTimerMax = 70 * 60; // 70 seconds
 
     public void applyEffect(BallInfo ballInfo) {
         switch(brickType) {

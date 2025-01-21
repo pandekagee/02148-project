@@ -45,11 +45,11 @@ public class Player extends GameObject {
     }
 
     private void winEvent(){
-        if (yScale == 0 && opponent.yScale == 0){
+        if (hp == 0 && opponent.hp == 0){
             winner = 3;
-        } else if (yScale == 0){
+        } else if (hp == 0){
             winner = opponentID+1;
-        } else if (opponent.yScale == 0){
+        } else if (opponent.hp == 0){
             winner = playerId+1;
         }
 
@@ -106,12 +106,11 @@ public class Player extends GameObject {
         OpponentInfo opponentInfo = Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class);
 
         if (opponentInfo != null){
-            if (opponentInfo.hp > 0){
-                opponent.hp = opponentInfo.hp;
-                opponent.powerupTimer = opponentInfo.powerupTimer;
-                opponent.y = opponentInfo.y;
-            } else{
-                opponent.yScale = 0;
+            opponent.hp = opponentInfo.hp;
+            opponent.powerupTimer = opponentInfo.powerupTimer;
+            opponent.y = opponentInfo.y;
+        
+            if (opponentInfo.hp <= 0){
                 destroyAllBalls();
             }
         }
