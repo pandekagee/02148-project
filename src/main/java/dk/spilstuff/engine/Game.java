@@ -68,6 +68,7 @@ public class Game {
     // multiplayer handling variables
     public static RemoteSpace lobby;
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
+    public static int lobbyUpdateAlarm = 0;
 
     public static void main(String[] args) {
         instantiatedObjects = new ArrayList<GameObject>();
@@ -886,13 +887,18 @@ public class Game {
 
     public static <T> T receiveValue(int playerId, String variable, Class<T> type) {
         try {
-            Future<Object[]> future = executor.submit(() -> 
-                lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(type))
-            );
-    
-            Object[] message = future.get();
-            if (message != null) {
-                return type.cast(message[2]);
+            
+            if (lobbyUpdateAlarm == 0){
+                Future<Object[]> future = executor.submit(() -> 
+                    lobby.getp(new ActualField(playerId), new ActualField(variable), new FormalField(type))
+                );
+
+                Object[] message = future.get();
+                if (message != null) {
+                    return type.cast(message[2]);
+                }
+            } else{
+                return null;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

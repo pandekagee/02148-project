@@ -212,6 +212,8 @@ public class Ball extends GameObject {
     public void drawEvent() {
         drawSelf();
 
+        Game.drawText(Game.getTextFont("Retro.ttf"), ""+ballID, -10, x + 10, y + 10);
+
         if(teamChangeTimer > 0)
             Game.drawSpriteScaled(sprite, subimg, depth - 1, x, y, teamChangeTimer/15+1, teamChangeTimer/15+1, rotation, color, (30-teamChangeTimer)/30);
     }

@@ -11,6 +11,7 @@ public class Opponent extends GameObject {
     public int ballHitTimer = 0;
     public int powerupTimer = 0;
     private int powerupTimerMax = 15*60;
+    public double newY;
     
     public void assignSide(int playerID) {
         Camera camera = Game.getCamera();
@@ -49,6 +50,8 @@ public class Opponent extends GameObject {
         ballHitTimer--;
         if(powerupTimer > 0)
             powerupTimer--;
+
+        y += (newY - y) * 0.25;
 
         setDamageScale(hp);
     }

@@ -99,21 +99,26 @@ public class Player extends GameObject {
     }
 
     public void sendInfo() {
-        Game.sendValue(opponentID, "updateOpponent", new OpponentInfo(y, hp, powerupTimer));
+        if (Game.lobbyUpdateAlarm % 3 == 0){
+            Game.sendValue(opponentID, "updateOpponent", new OpponentInfo(y, hp, powerupTimer));
+        }
     }
 
     public void updateOpponent(int playerID){
-        OpponentInfo opponentInfo = Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class);
+        OpponentInfo opponentInfo;
 
-        if (opponentInfo != null){
-            opponent.hp = opponentInfo.hp;
-            opponent.powerupTimer = opponentInfo.powerupTimer;
-            opponent.y = opponentInfo.y;
-        
-            if (opponentInfo.hp <= 0){
-                destroyAllBalls();
+        do{
+            opponentInfo = Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class);
+            if (opponentInfo != null){
+                opponent.hp = opponentInfo.hp;
+                opponent.powerupTimer = opponentInfo.powerupTimer;
+                opponent.newY = opponentInfo.y;
+            
+                if (opponentInfo.hp <= 0){
+                    destroyAllBalls();
+                }
             }
-        }
+        } while(opponentInfo != null);
     }
 
     private void createBall() {
@@ -159,6 +164,12 @@ public class Player extends GameObject {
 
     @Override
     public void updateEvent() {
+        
+        if (Game.lobbyUpdateAlarm <= 0){
+            Game.lobbyUpdateAlarm = 10;
+        }
+        Game.lobbyUpdateAlarm -= 1;
+
         playerIndicatorTimer--;
         ballHitTimer--;
         if(powerupTimer > 0)
@@ -196,10 +207,8 @@ public class Player extends GameObject {
         double prevY = y;
         y = Game.getMouseY();
         y = Math.clamp(y, 32*yScale, camera.getHeight()-32*yScale);
-
-        if (y != prevY){
-            sendInfo();
-        }
+        
+        sendInfo();
 
         camera = Game.getCamera();
         
