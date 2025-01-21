@@ -27,6 +27,9 @@ public class Player extends GameObject {
     public int opponentScore = 0;
     int winner = 0;
     int winnerAlarm = 60 * 3;
+    public int lobbyUpdateAlarm = 0;
+    private int refreshRate = 5;
+    public boolean performUpdate = true;
 
     Camera camera;
 
@@ -99,12 +102,13 @@ public class Player extends GameObject {
     }
 
     public void sendInfo() {
-        if (Game.lobbyUpdateAlarm % 3 == 0){
+        if (lobbyUpdateAlarm % refreshRate == 0){
             Game.sendValue(opponentID, "updateOpponent", new OpponentInfo(y, hp, powerupTimer));
         }
     }
 
     public void updateOpponent(int playerID){
+        if(performUpdate)
         Game.receiveValue(playerID, "updateOpponent", OpponentInfo.class)
         .thenAccept(opponentInfos -> {
             if (opponentInfos.size() != 0){
@@ -129,11 +133,13 @@ public class Player extends GameObject {
             Mathf.lengthDirectionX(3, startAngle),
             Mathf.lengthDirectionY(3, startAngle),
             0,
-            playerId + 1
+            playerId + 1,
+            true,
+            true
         );
 
-        Game.sendValue(playerId, "ballCreated", ballInfo);
-        Game.sendValue(opponentID, "ballCreated", ballInfo);
+        Game.sendValue(playerId, "ballInfo", ballInfo);
+        Game.sendValue(opponentID, "ballInfo", ballInfo);
     }
 
     public void assignSide(int playerID) {
@@ -164,10 +170,13 @@ public class Player extends GameObject {
     @Override
     public void updateEvent() {
         
-        if (Game.lobbyUpdateAlarm <= 0){
-            Game.lobbyUpdateAlarm = 10;
+        performUpdate = (lobbyUpdateAlarm == 0);
+
+        if (lobbyUpdateAlarm <= 0){
+            lobbyUpdateAlarm = refreshRate;
         }
-        Game.lobbyUpdateAlarm -= 1;
+        
+        lobbyUpdateAlarm--;
 
         playerIndicatorTimer--;
         ballHitTimer--;

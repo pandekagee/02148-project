@@ -24,7 +24,7 @@ public class Brick extends GameObject {
                     y,
                     Mathf.lengthDirectionX(3, startAngle),
                     Mathf.lengthDirectionY(3, startAngle),
-                    0
+                    0, 0, false, true
                 );
 
                 Game.sendValue(0, "ballCreated", _ballInfo);

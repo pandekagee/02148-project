@@ -107,8 +107,7 @@ public class BrickManager extends GameObject {
 
     @Override
     public void updateEvent(){
-        super.updateEvent();
-
+        if(player.performUpdate)
         Game.receiveValue(player.playerId, "destroyBrick", BrickDestructInfo.class)
         .thenAccept(destructInfos -> {
             for(BrickDestructInfo destructInfo : destructInfos) {
@@ -123,10 +122,5 @@ public class BrickManager extends GameObject {
                 destroyBrick(destructInfo.ballInfo, destructInfo.id);
             }
         });
-    }
-
-    @Override
-    public void drawEvent(){
-        
     }
 }

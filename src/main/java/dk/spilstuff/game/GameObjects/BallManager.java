@@ -17,23 +17,7 @@ public class BallManager extends GameObject {
         ball.y = ballInfo.y;
         ball.hsp = ballInfo.hsp;
         ball.vsp = ballInfo.vsp;
-        ball.ballTeam = ballInfo.team;
-    }
-
-    private void checkForNewBalls(){
-        Game.receiveValue(player.opponentID, "ballCreated", BallInfo.class)
-        .thenAccept(ballInfos -> {
-            for(BallInfo ballInfo : ballInfos) {
-                
-                Ball ball = (Ball)Game.instantiate(0, 0, "Ball");
-                ball.ballID = ballList.size();
-                ballList.add(ball);
-                
-                ball.player = player;
-                setToBallInfo(ball, ballInfo);
-                ball.changeTeam(ballInfo.team);
-            }
-        });
+        ball.changeTeam(ballInfo.team);
     }
 
     public Ball getBall(long id){
@@ -46,10 +30,18 @@ public class BallManager extends GameObject {
     }
 
     public void checkForBallInfo(){
+        if(player.performUpdate)
         Game.receiveValue(player.playerId, "ballInfo", BallInfo.class)
         .thenAccept(ballInfos -> {
             for(BallInfo ballInfo : ballInfos) {
                 Ball ball = getBall(ballInfo.id);
+                
+                if(ballInfo.instantiate) {
+                    ball = (Ball)Game.instantiate(0, 0, "Ball");
+                    ball.ballID = ballList.size();
+                    ballList.add(ball);
+                    ball.player = player;
+                }
                 
                 setToBallInfo(ball, ballInfo);
 
@@ -71,12 +63,7 @@ public class BallManager extends GameObject {
 
     @Override
     public void updateEvent(){
-        super.updateEvent();
-
-        checkForNewBalls();
         checkForBallInfo();
-
-
     }
 }
 

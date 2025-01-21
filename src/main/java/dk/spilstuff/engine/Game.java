@@ -72,7 +72,6 @@ public class Game {
     // multiplayer handling variables
     public static RemoteSpace lobby;
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
-    public static int lobbyUpdateAlarm = 0;
 
     public static void main(String[] args) {
         instantiatedObjects = new ArrayList<GameObject>();
@@ -889,24 +888,21 @@ public class Game {
     }
 
     public static <T> CompletableFuture<ArrayList<T>> receiveValue(int playerId, String variable, Class<T> type) {
-        if(lobbyUpdateAlarm == 0)
-            return CompletableFuture.supplyAsync(() -> {
-                try {
-                    var messages = lobby.getAll(new ActualField(playerId), new ActualField(variable), new FormalField(type));
-                    
-                    ArrayList<T> list = new ArrayList<T>();
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                var messages = lobby.getAll(new ActualField(playerId), new ActualField(variable), new FormalField(type));
+                
+                ArrayList<T> list = new ArrayList<T>();
 
-                    for(int i = 0; i < messages.size(); i++) {
-                        list.add(type.cast(messages.get(i)[2]));
-                    }
-
-                    return list;
-                } catch (Exception e) {
-                    throw new RuntimeException("Failed to receive data", e);
+                for(int i = 0; i < messages.size(); i++) {
+                    list.add(type.cast(messages.get(i)[2]));
                 }
-            }, executor);
-        
-        return CompletableFuture.completedFuture(new ArrayList<T>());
+
+                return list;
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to receive data", e);
+            }
+        }, executor);
     }
 
     public static boolean removeValue(int playerId, String variable, int actualValue) {

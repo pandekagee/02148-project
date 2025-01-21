@@ -105,7 +105,7 @@ public class Ball extends GameObject {
                 }
 
                 if(collided && Game.queryValue(0, "brick", brick.brickId)) { //if colliding AND the brick still exists in tuple space
-                    BallInfo _ballInfo = new BallInfo(x,y,hsp,vsp,ballID,ballTeam); 
+                    BallInfo _ballInfo = new BallInfo(x,y,hsp,vsp,ballID,ballTeam,false); 
 
                     brickLayout.destroyBrick(_ballInfo, brick.brickId);
                     
