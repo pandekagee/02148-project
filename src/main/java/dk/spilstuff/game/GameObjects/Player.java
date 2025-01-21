@@ -10,16 +10,18 @@ import dk.spilstuff.engine.Game;
 import dk.spilstuff.engine.GameObject;
 import dk.spilstuff.engine.Keys;
 import dk.spilstuff.engine.Mathf;
+import dk.spilstuff.engine.Sprite;
 
 public class Player extends GameObject {
     
-    int playerId = 1;
+    int playerId = 0;
     int opponentID = 0;
     boolean gameStart = false;
     private int playerIndicatorTimer = 0;
-    public int hp = 3;
-    public double playerScore = 0;
-    public double opponentScore = 0;
+    public int ballHitTimer = 0;
+    public int hp = 15;
+    public int playerScore = 0;
+    public int opponentScore = 0;
     int winner = 0;
     int winnerAlarm = 60 * 3;
 
@@ -66,8 +68,8 @@ public class Player extends GameObject {
 
     public double[] getDamageScale(int hp){
         double scaleOff = 2;
-        double xS = 8 * (hp+scaleOff) / (3+scaleOff);
-        double yS = 32 * (hp+scaleOff) / (3+scaleOff);
+        double xS = (hp+scaleOff) / (3+scaleOff);
+        double yS = (hp+scaleOff) / (3+scaleOff);
 
         return new double[] {xS, yS};
     }
@@ -120,7 +122,7 @@ public class Player extends GameObject {
         camera = Game.getCamera();
         
         x = playerID == 0 ? 50 : camera.getWidth() - 50;
-        color = playerID == 0 ? Color.RED : Color.BLUE;
+        playerId = playerID;
     }
 
     @Override
@@ -131,8 +133,9 @@ public class Player extends GameObject {
 
         gameMode = Game.getActiveScene().getName().equals("rm_game1") ? 0 : 1;
 
-        xScale = 8;
-        yScale = 32;
+        imgSpeed = 0;
+
+        sprite = new Sprite("spr_paddle", true);
 
         opponent = (Opponent)Game.instantiate(0, y, "Opponent");
 
@@ -143,6 +146,7 @@ public class Player extends GameObject {
     @Override
     public void updateEvent() {
         playerIndicatorTimer--;
+        ballHitTimer--;
 
         checkPlayerDeath();
         updateOpponent(playerId);
@@ -169,10 +173,6 @@ public class Player extends GameObject {
                 playerIndicatorTimer = 8 * 60; // 8 seconds
             }
         }
-
-        if (Game.keyIsPressed(Keys.VK_L)){
-            createBall();
-        }
         
         double prevY = y;
         y = Game.getMouseY();
@@ -191,7 +191,7 @@ public class Player extends GameObject {
 
     @Override
     public void drawEvent() {
-        drawSelf();
+        Game.drawSpriteScaled(sprite, playerId * 2 + (ballHitTimer > 0 ? 1 : 0), depth, x + (playerId == 0 ? -1 : 1) * Math.clamp(ballHitTimer, 0, 30)/3, y, xScale, yScale, rotation, color, alpha);
 
         String fpsString = "FPS: " + Game.getFPS() + "\nRFPS:" + Game.getRealFPS();
 
@@ -208,9 +208,11 @@ public class Player extends GameObject {
         }
 
         //draw scores
-        Game.drawTextScaled( Game.getTextFont("Retro.ttf"),String.valueOf(playerScore), -100, 10, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
-        String str = String.valueOf(opponentScore);
-        Game.drawTextScaled( Game.getTextFont("Retro.ttf"), str , -100, camera.getWidth() - length(str) * 30, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
+        int leftScore = playerId == 0 ? playerScore : opponentScore;
+        int rightScore = playerId == 0 ? opponentScore : playerScore;
+
+        Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"Score: "+leftScore, -100, 10, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
+        Game.drawTextScaled( Game.getTextFont("Retro.ttf"), "Score: "+rightScore , -100, camera.getWidth() - length("Score: "+rightScore) * 15, camera.getHeight() - 25,1,1,0,Color.WHITE,1);
 
         Game.drawText( Game.getTextFont("Retro.ttf"),fpsString,-100, camera.getX() + 10, camera.getY() + 20 );
 

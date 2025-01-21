@@ -37,10 +37,7 @@ public class Brick extends GameObject {
     public void createEvent() {
         super.createEvent();
 
-        sprite = new Sprite("whiteSquareBUILTIN", true);
-
-        xScale = 6;
-        yScale = 22;
+        sprite = new Sprite("spr_brick", true);
     }
 
     @Override

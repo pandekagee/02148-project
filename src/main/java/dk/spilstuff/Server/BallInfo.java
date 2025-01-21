@@ -7,6 +7,7 @@ public class BallInfo {
     public final double vsp;
     public final long id;
     public final int team;
+    public final boolean hitByPaddle;
 
     public BallInfo(double x, double y, double hsp, double vsp, long id) {
         this.x = x;
@@ -15,6 +16,7 @@ public class BallInfo {
         this.vsp = vsp;
         this.id = id;
         this.team = 0;
+        this.hitByPaddle = false;
     }
 
     public BallInfo(double x, double y, double hsp, double vsp, long id, int team) {
@@ -24,5 +26,16 @@ public class BallInfo {
         this.vsp = vsp;
         this.id = id;
         this.team = team;
+        this.hitByPaddle = false;
+    }
+
+    public BallInfo(double x, double y, double hsp, double vsp, long id, int team, boolean hitByPaddle) {
+        this.x = x;
+        this.y = y;
+        this.hsp = hsp;
+        this.vsp = vsp;
+        this.id = id;
+        this.team = team;
+        this.hitByPaddle = hitByPaddle;
     }
 }

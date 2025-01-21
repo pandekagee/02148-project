@@ -28,9 +28,9 @@ public class Ball extends GameObject {
         if (ballTeam == 0){
 
         } else if (ballTeam == player.playerId+1){
-            player.opponentScore += 1;
+            player.opponentScore++;
         } else{
-            player.playerScore += 1;
+            player.playerScore++;
         }
     }
 
@@ -75,7 +75,9 @@ public class Ball extends GameObject {
                 motionSet(dir, 3);
 
                 sendTeam(player.opponentID);
-                sendPosition(player.opponentID);
+                sendPosition(player.opponentID, true);
+
+                player.ballHitTimer = 30;
             }
 
             isColliding = true;
@@ -86,32 +88,34 @@ public class Ball extends GameObject {
     }
 
     private void brickCollision(){
-        Brick brick = (Brick) Game.nearestInstance(x, y, Brick.class);
+        if(ballTeam != 0) { // white balls (unclaimed) cannot collide with bricks
+            Brick brick = (Brick) Game.nearestInstance(x, y, Brick.class);
 
-        if (brick != null){
-            boolean collided = false;
-            
-            if (collisionMeeting(x+hsp, y, brick)){
-                hsp = -hsp;
-
-                collided = true;
-            }
-
-            if (collisionMeeting(x, y+vsp, brick)){
-                vsp = -vsp;
-
-                collided = true;
-            }
-
-            if(collided && Game.queryValue(0, "brick", brick.brickId)) { //if colliding AND the brick still exists in tuple space
-                BallInfo _ballInfo = new BallInfo(x,y,hsp,vsp,ballID,ballTeam); 
-
-                brickLayout.destroyBrick(_ballInfo, brick.brickId);
+            if (brick != null){
+                boolean collided = false;
                 
-                increasePlayerScore();
+                if (collisionMeeting(x+hsp, y, brick)){
+                    hsp = -hsp;
 
-                Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, _ballInfo));
-                sendPosition(player.opponentID);
+                    collided = true;
+                }
+
+                if (collisionMeeting(x, y+vsp, brick)){
+                    vsp = -vsp;
+
+                    collided = true;
+                }
+
+                if(collided && Game.queryValue(0, "brick", brick.brickId)) { //if colliding AND the brick still exists in tuple space
+                    BallInfo _ballInfo = new BallInfo(x,y,hsp,vsp,ballID,ballTeam); 
+
+                    brickLayout.destroyBrick(_ballInfo, brick.brickId);
+                    
+                    increasePlayerScore();
+
+                    Game.sendValue(player.opponentID, "destroyBrick", new BrickDestructInfo(brick.brickId, _ballInfo));
+                    sendPosition(player.opponentID, false);
+                }
             }
         }
     }
@@ -121,8 +125,8 @@ public class Ball extends GameObject {
         vsp = Mathf.lengthDirectionY(speed, angle);
     }
 
-    private void sendPosition(int playerID) {
-        BallInfo ballInfo = new BallInfo(x, y, hsp, vsp, ballID);
+    private void sendPosition(int playerID, boolean hitByPaddle) {
+        BallInfo ballInfo = new BallInfo(x, y, hsp, vsp, ballID, ballTeam, hitByPaddle);
         Game.sendValue(playerID, "ballInfo", ballInfo);
     }
 
@@ -163,9 +167,9 @@ public class Ball extends GameObject {
         if (ballTeam == 0){
             motionSet(angle, 3);
         } else if (player.playerId+1 == ballTeam){
-            motionSet(angle, (3 + player.playerScore / 5));
+            motionSet(angle, (3 + player.playerScore / 10d));
         } else{
-            motionSet(angle, 3 + player.opponentScore / 5);
+            motionSet(angle, 3 + player.opponentScore / 10d);
         }
         
         if(x < 0) {
@@ -175,7 +179,7 @@ public class Ball extends GameObject {
                 } else if (player.playerId == 0){
                     x = player.x;
                     y = player.y;
-                    sendPosition(player.opponentID);
+                    sendPosition(player.opponentID, false);
                     damagePlayer();
                 }
             }
@@ -191,7 +195,7 @@ public class Ball extends GameObject {
                 } else if (player.playerId == 1){
                     x = player.x;
                     y = player.y;
-                    sendPosition(player.opponentID);
+                    sendPosition(player.opponentID, false);
                     damagePlayer();
                 }
             }

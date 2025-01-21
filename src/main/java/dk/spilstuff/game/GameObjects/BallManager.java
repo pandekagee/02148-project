@@ -59,6 +59,10 @@ public class BallManager extends GameObject {
                 Ball ball = getBall(ballInfo.id);
 
                 setToBallInfo(ball, ballInfo);
+
+                if(ballInfo.hitByPaddle) {
+                    player.opponent.ballHitTimer = 30;
+                }
             }
         } while(ballInfo != null);
     }

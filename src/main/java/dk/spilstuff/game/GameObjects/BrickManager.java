@@ -110,9 +110,9 @@ public class BrickManager extends GameObject {
             if (destructInfo.ballInfo.team == 0){
                 
             } else if (destructInfo.ballInfo.team == player.playerId+1){
-                player.opponentScore += 1;
+                player.opponentScore++;
             } else{
-                player.playerScore += 1;
+                player.playerScore++;
             }
 
             destroyBrick(destructInfo.ballInfo, destructInfo.id);
