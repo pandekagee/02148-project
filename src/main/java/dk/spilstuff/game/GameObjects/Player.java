@@ -20,12 +20,41 @@ public class Player extends GameObject {
     public int hp = 3;
     public double playerScore = 0;
     public double opponentScore = 0;
+    int winner = 0;
+    int winnerAlarm = 60 * 3;
 
     Camera camera;
 
     public Opponent opponent;
 
     public int gameMode;
+
+    private void destroyAllBalls(){
+        GameObject[] ballList = Game.getInstancesOfType(Ball.class);
+
+        for (GameObject obj : ballList) {
+            if (obj instanceof Ball) {
+                Game.destroy((Ball) obj);
+            }
+        }
+    }
+
+    private void winEvent(){
+        if (yScale == 0 && opponent.yScale == 0){
+            winner = 3;
+        } else if (yScale == 0){
+            winner = opponentID+1;
+        } else if (opponent.yScale == 0){
+            winner = playerId+1;
+        }
+
+        if (winner > 0){
+            winnerAlarm -= 1;
+            if (winnerAlarm <= 0){
+                Game.setActiveScene("_rm_menu");
+            }
+        }
+    }
 
     private void getOpponentY(){
         Double _y = Game.receiveDouble(opponentID, "y");
@@ -45,12 +74,15 @@ public class Player extends GameObject {
 
     private void checkPlayerDeath(){
         if (hp <= 0){
-            Game.destroy(this);
+            yScale = 0;
+            destroyAllBalls();
         } else {
             double[] scale = getDamageScale(hp);
             xScale = scale[0];
             yScale = scale[1];
         }
+
+        winEvent();
     }
 
     public void updateOpponent(int playerID){
@@ -62,7 +94,8 @@ public class Player extends GameObject {
                 opponent.xScale = scale[0];
                 opponent.yScale = scale[1];
             } else{
-                Game.destroy(opponent);
+                opponent.yScale = 0;
+                destroyAllBalls();
             }
         }
     }
@@ -165,6 +198,13 @@ public class Player extends GameObject {
         if (!gameStart){
             Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"WAITING FOR OPPONENT", -100, camera.getWidth() / 2 - 140, camera.getHeight() / 2 - 25,1,1,0,Color.BLACK,1);
             Game.drawText( Game.getTextFont("Retro.ttf"),"WAITING FOR OPPONENT", -100, camera.getWidth() / 2 - 140-2, camera.getHeight() / 2 - 25-2);    
+        }
+
+        if (winner > 0){
+            String winner_string = winner == 1 ? "PLAYER RED" : winner == 2 ? "PLAYER BLUE" : "DRAW";
+            Color winnerColor = winner == 1 ? Color.red : winner == 2 ? Color.blue : Color.green;
+            Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"THE WINNER IS " + winner_string, -100, camera.getWidth() / 2 - 137+2, camera.getHeight() / 2 - 25+2, 1, 1, 0, Color.black, 1);
+            Game.drawTextScaled( Game.getTextFont("Retro.ttf"),"THE WINNER IS " + winner_string, -100, camera.getWidth() / 2 - 137, camera.getHeight() / 2 - 25, 1, 1, 0, winnerColor, 1);
         }
 
         //draw scores
