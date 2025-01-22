@@ -45,7 +45,7 @@ public class Ball extends GameObject {
 
     private void playerCollision() {
 
-        if (collisionMeeting(x+hsp, y, player)){
+        if (player.sprite != null && collisionMeeting(x+hsp, y, player)){
             if(!isColliding && (player.gameMode == 0 || Mathf.sign(hsp) == (player.playerId == 0 ? -1 : 1))) {
                 double dir = Mathf.pointDirection(player.x, player.y, x-hsp, y-vsp);
 
@@ -92,16 +92,18 @@ public class Ball extends GameObject {
             if (brick != null){
                 boolean collided = false;
                 
-                if (collisionMeeting(x+hsp, y, brick)){
-                    hsp = -hsp;
+                if (brick.sprite != null){
+                    if (collisionMeeting(x+hsp, y, brick)){
+                        hsp = -hsp;
 
-                    collided = true;
-                }
+                        collided = true;
+                    }
 
-                if (collisionMeeting(x, y+vsp, brick)){
-                    vsp = -vsp;
+                    if (collisionMeeting(x, y+vsp, brick)){
+                        vsp = -vsp;
 
-                    collided = true;
+                        collided = true;
+                    }
                 }
 
                 if(collided && Game.queryValue(0, "brick", brick.brickId)) { //if colliding AND the brick still exists in tuple space
@@ -204,8 +206,6 @@ public class Ball extends GameObject {
     @Override
     public void drawEvent() {
         drawSelf();
-
-        Game.drawText(Game.getTextFont("Retro.ttf"), ""+ballID, -10, x + 10, y + 10);
 
         if(teamChangeTimer > 0)
             Game.drawSpriteScaled(sprite, subimg, depth - 1, x, y, teamChangeTimer/15+1, teamChangeTimer/15+1, rotation, color, (30-teamChangeTimer)/30);
