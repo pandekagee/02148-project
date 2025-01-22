@@ -13,7 +13,7 @@ public class InactiveBrick extends GameObject {
 
     private int respawnTimer = 0;
 
-    private final double respawnTimerMax = 70 * 60; // 70 seconds
+    private final double respawnTimerMax = 75 * 60; // 75 seconds
 
     @Override
     public void updateEvent(){
@@ -35,7 +35,8 @@ public class InactiveBrick extends GameObject {
         if(respawnTimer < 30) {
             double _prog = respawnTimer/30d;
 
-            Game.drawSpriteScaled(sprite, 0, depth-1, x, y, _prog+1d, _prog+1d, 0, color, 1d-_prog);
+            if (sprite != null)
+                Game.drawSpriteScaled(sprite, 0, depth-1, x, y, _prog+1d, _prog+1d, 0, color, 1d-_prog);
         }
 
         drawSelf();

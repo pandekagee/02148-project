@@ -25,7 +25,7 @@ public class BrickManager extends GameObject {
     public void destroyBrick(BallInfo ballInfo, int Id){
         Brick brick = brickMap.get(Id);
         
-        if (brick != null){
+        if (brick != null && player.gameStart){
             if(Game.removeValue(0, "brick", Id) || brick.brickType != 1) brick.applyEffect(ballInfo);
             Game.destroy(brick);
             brickMap.remove(Id);
@@ -96,18 +96,17 @@ public class BrickManager extends GameObject {
     @Override
     public void createEvent() {
         super.createEvent();
+        createAllBricks();
         camera = Game.getCamera();
 
         player = (Player) Game.getInstancesOfType(Player.class)[0];
 
         gameMode = Game.getActiveScene().getName().equals("rm_game1") ? 1 : 0;
-
-        createAllBricks();
     }
 
     @Override
     public void updateEvent(){
-        if(player.performUpdate)
+        if(player.performUpdate && player.gameStart)
         Game.receiveValue(player.playerId, "destroyBrick", BrickDestructInfo.class)
         .thenAccept(destructInfos -> {
             for(BrickDestructInfo destructInfo : destructInfos) {
