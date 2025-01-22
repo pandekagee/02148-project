@@ -170,7 +170,7 @@ public class Ball extends GameObject {
                 if (ballTeam == 2){
                     hsp = -hsp;
                 } else if (player.playerId == 0){
-                    x = player.x;
+                    x = player.x - hsp * 2;
                     y = player.y;
                     sendInfo(player.opponentID, false);
                     damagePlayer();
@@ -186,7 +186,7 @@ public class Ball extends GameObject {
                 if (ballTeam == 1){
                     hsp = -hsp;
                 } else if (player.playerId == 1){
-                    x = player.x;
+                    x = player.x - hsp * 2;
                     y = player.y;
                     sendInfo(player.opponentID, false);
                     damagePlayer();

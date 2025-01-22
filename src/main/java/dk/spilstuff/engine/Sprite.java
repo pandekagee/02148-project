@@ -1,10 +1,11 @@
 package dk.spilstuff.engine;
 
+import java.io.FileReader;
 import java.io.IOException;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.json.JSONException;
-import java.io.FileReader;
 
 public class Sprite{
     final private SpriteImage[] sprites;
