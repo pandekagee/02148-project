@@ -13,7 +13,7 @@ public class InactiveBrick extends GameObject {
 
     private int respawnTimer = 0;
 
-    private final double respawnTimerMax = 75 * 60; // 75 seconds
+    private final double respawnTimerMax = 30 * 60; // 30 seconds
 
     @Override
     public void updateEvent(){
