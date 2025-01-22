@@ -3,6 +3,8 @@ The project of Introduction to Coordination in Distributed Applications (02148) 
 
 Brick Break-in is a real-time online multiplayer PvP game based on the retro hit Breakout. Two players face each other in head-to-head breakout combat to come out on top.
 
+[Watch the demonstration video!](https://www.youtube.com/watch?v=9d4JMrXdBdU)
+
 ## Game mechanics
 Following is a short explanation of the basic game mechanics.
 
