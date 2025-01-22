@@ -15,9 +15,9 @@
             "yscale": 1
         }
     ],
-    "width": 640,
+    "width": 1280,
     "fps": 60,
-    "height": 360,
+    "height": 720,
     "camwidth": 640,
     "camheight": 360
 }

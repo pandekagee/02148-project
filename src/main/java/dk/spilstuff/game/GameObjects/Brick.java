@@ -27,8 +27,8 @@ public class Brick extends GameObject {
                     0, 0, false, true
                 );
 
-                Game.sendValue(0, "ballCreated", _ballInfo);
-                Game.sendValue(1, "ballCreated", _ballInfo);
+                Game.sendValue(0, "ballInfo", _ballInfo);
+                Game.sendValue(1, "ballInfo", _ballInfo);
             break;
             case 2: // powerup
                 Powerup powerup = (Powerup)Game.instantiate(x, y, "Powerup");
